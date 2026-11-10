@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Anonimizer — lokalna pseudonimizacja danych (offline)</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#111c33; --panel2:#162341; --line:#2b3a55;
+    --text:#e2e8f0; --muted:#94a3b8; --blue:#3b82f6; --blue2:#60a5fa;
+    --green:#22c55e; --red:#ef4444; --amber:#f59e0b;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.45}
+  .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;
+       padding:12px 20px;border-bottom:1px solid var(--line);background:#0b1224;position:sticky;top:0;z-index:5}
+  .top h1{margin:0;font-size:18px;font-weight:650;letter-spacing:.2px}
+  .top h1 span{color:var(--muted);font-weight:400;font-size:13px}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
+         border:1px solid #14532d;background:#052e16;color:#86efac;font-weight:600;font-size:13px}
+  .badge.bad{border-color:#7f1d1d;background:#450a0a;color:#fecaca}
+  .badge .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .badge.bad .dot{background:var(--red);box-shadow:0 0 8px var(--red)}
+  .badge small{font-weight:400;opacity:.8}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px 20px;align-items:start}
+  @media (max-width:1050px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+  .card h2{margin:0 0 12px;font-size:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .card h2 small{color:var(--muted);font-weight:400;font-size:12px}
+  .step{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700}
+  .card h3{margin:18px 0 8px;font-size:13px;color:var(--blue2);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:8px}
+  label.l{display:block;margin:0 0 6px;color:var(--muted);font-size:12px}
+  .count{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:0 8px;font-size:12px;letter-spacing:0}
+
+  textarea,input[type=text],select{width:100%;background:#0b1224;color:var(--text);border:1px solid var(--line);border-radius:8px;
+    padding:10px;font-family:var(--mono);font-size:13px;outline:none}
+  select{font-family:var(--sans);cursor:pointer}
+  textarea{min-height:240px;resize:vertical;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;overflow:auto;tab-size:4}
+  textarea.out{background:#0a1020}
+  textarea:focus,input[type=text]:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(59,130,246,.25)}
+
+  .btn{appearance:none;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:8px 14px;border-radius:8px;
+       font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn:hover{border-color:var(--blue2)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.primary:hover{background:#2563eb}
+  .btn.danger{background:#7f1d1d;border-color:#b91c1c;color:#fff}
+  .btn.danger:hover{background:#b91c1c}
+  .btn.big{width:100%;padding:14px;font-size:16px;margin-top:10px}
+  .btn.sm{padding:3px 9px;font-size:12px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+  .muted{color:var(--muted);font-size:12px}
+  .warn{color:var(--amber)}
+  .okc{color:#86efac}
+  .errc{color:#fca5a5}
+
+  .toggles{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .toggles label{display:inline-flex;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--line);
+       border-radius:999px;padding:3px 10px;font-size:12px;cursor:pointer;user-select:none}
+  .toggles input{accent-color:var(--blue)}
+
+  .manual{display:grid;grid-template-columns:1fr 165px;gap:10px;align-items:end;margin-top:14px;
+          padding:12px;border:1px dashed var(--line);border-radius:10px;background:#0e1830}
+  .manual .full{grid-column:1/-1}
+  @media (max-width:520px){.manual{grid-template-columns:1fr}}
+
+  .tablewrap{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#0b1224}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{padding:6px 8px;border-bottom:1px solid #1b2943;text-align:left;vertical-align:top}
+  th{position:sticky;top:0;background:#14203b;color:var(--muted);font-weight:600;z-index:1}
+  td.mono,code{font-family:var(--mono)}
+  td.val{max-width:260px;word-break:break-all;white-space:pre-wrap;font-family:var(--mono)}
+  td.act{white-space:nowrap}
+  .tag{display:inline-block;padding:1px 7px;border-radius:6px;background:#1e3a8a;color:#bfdbfe;font-size:11px;font-weight:700}
+  .empty{color:var(--muted);text-align:center;padding:14px}
+
+  .note{margin:12px 20px 24px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#0b1224;color:var(--muted);font-size:12px}
+  .note b{color:var(--text)}
+  .foot-author{margin-top:8px;padding-top:8px;border-top:1px solid #1b2943;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;color:var(--muted)}
+  #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
+         background:#1e293b;border:1px solid var(--blue);color:var(--text);padding:10px 18px;border-radius:10px;
+         transition:opacity .2s,transform .2s;z-index:50;max-width:90vw}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.warn{border-color:var(--amber)}
+  kbd{font-family:var(--mono);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <h1>Anonimizer <span>· lokalna pseudonimizacja i deanonimizacja · autor: <b>hatterp</b></span></h1>
+  <div class="badge" id="secBadge" role="status">
+    <span class="dot"></span>
+    <span>Tryb Offline (CSP aktywne - zero ruchu sieciowego)</span>
+    <small id="secDetail">autotest…</small>
+  </div>
+  <button class="btn danger" id="panicBtn" title="Alt+Shift+X">PANIC · Wyczyść wszystko</button>
+</header>
+
+<main class="grid">
+
+  <!-- ===================== KROK 1: MASKOWANIE ===================== -->
+  <section class="card" id="colMask">
+    <h2><span class="step">1</span> Anonimizacja <small>Prompt OUT — przed wysłaniem do AI</small></h2>
+
+    <label class="l" for="src">Dane źródłowe (kod, logi, konfiguracje, hasła, IP) — wklej tutaj</label>
+    <textarea id="src" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"
+              placeholder="Wklej tutaj poufny tekst…&#10;Ctrl+Enter = skanuj i zamaskuj"></textarea>
+
+    <div class="toggles" role="group" aria-label="Kategorie automatycznej detekcji">
+      <label><input type="checkbox" id="tg_IP" checked> IP (v4/v6, CIDR)</label>
+      <label><input type="checkbox" id="tg_EMAIL" checked> E-mail</label>
+      <label><input type="checkbox" id="tg_SECRET" checked> Sekrety (klucz=wartość, PEM)</label>
+      <label><input type="checkbox" id="tg_TOKEN" checked> Tokeny / hashe / klucze</label>
+      <label><input type="checkbox" id="tg_HOST" checked> FQDN / hosty</label>
+      <label><input type="checkbox" id="tg_MAC" checked> MAC</label>
+      <label><input type="checkbox" id="tg_ID" checked> ID / Konta / Karty</label>
+      <label><input type="checkbox" id="tg_USER" checked> User / Login (dbuser, superuser)</label>
+      <label><input type="checkbox" id="tg_PORT" checked> Porty (port=, :port)</label>
+      <label><input type="checkbox" id="tg_PII" checked> Dane osobowe / PII (imię, adres, tel.)</label>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" id="scanBtn">Skanuj i zamaskuj</button>
+      <button class="btn" id="clear1Btn" title="Wyczyść dane, słownik i schowek">Wyczyść</button>
+      <span class="muted" id="selInfo">Zaznaczenie: 0 zn.</span>
+    </div>
+
+    <div class="manual">
+      <div>
+        <label class="l" for="lblPreset">Predefiniowana etykieta (lista)</label>
+        <select id="lblPreset" autocomplete="off">
+          <option value="USER">Użytkownik (USER)</option>
+          <option value="IMIE">Imię (IMIE)</option>
+          <option value="NAZWISKO">Nazwisko (NAZWISKO)</option>
+          <option value="ADRES">Adres (ADRES)</option>
+          <option value="NAZWA">Nazwa (NAZWA)</option>
+          <option value="PESEL">PESEL (PESEL)</option>
+          <option value="ROK_URODZENIA">Rok urodzenia (ROK_URODZENIA)</option>
+          <option value="TELEFON">Telefon (TELEFON)</option>
+          <option value="ID">Identyfikator (ID)</option>
+          <option value="PORT">Port (PORT)</option>
+        </select>
+      </div>
+      <div>
+        <label class="l" for="lbl">Etykieta tokena (ręcznie)</label>
+        <input type="text" id="lbl" value="USER" maxlength="24" spellcheck="false" autocomplete="off" placeholder="np. USER, PESEL">
+      </div>
+      <button class="btn full" id="manualBtn">Zamaskuj zaznaczenie jako token</button>
+      <div class="muted full">Zaznacz dowolny fragment w polu powyżej, wybierz etykietę z listy lub wpisz własną (np. <code>USER</code> → <code>&lt;USER_01&gt;</code>) i kliknij przycisk. Maskowane są wszystkie wystąpienia tego ciągu.</div>
+    </div>
+
+    <h3>Aktywne mapowania <span class="count" id="mapCount">0</span></h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Typ</th><th>Token</th><th>Długość</th><th>Użyć</th><th>Wartość</th><th>Akcje</th></tr></thead>
+        <tbody id="mapBody"></tbody>
+      </table>
+    </div>
+
+    <h3>Zanonimizowany tekst — bezpieczny prompt</h3>
+    <textarea id="out1" class="out" readonly spellcheck="false" autocomplete="off" placeholder="Tu pojawi się zanonimizowany tekst…"></textarea>
+    <div class="muted" id="stats1" aria-live="polite"></div>
+    <button class="btn primary big" id="copy1">Kopiuj bezpieczny prompt</button>
+  </section>
+
+  <!-- ===================== KROK 2: PRZYWRACANIE ===================== -->
+  <section class="card" id="colRestore">
+    <h2><span class="step">2</span> Przywracanie danych <small>Prompt IN — po powrocie z AI</small></h2>
+
+    <label class="l" for="src2">Surowa odpowiedź z modelu (z placeholderami, np. &lt;IP_01&gt;, &lt;SECRET_01&gt;)</label>
+    <textarea id="src2" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"
+              placeholder="Wklej tutaj odpowiedź LLM…&#10;Ctrl+Enter = przywróć oryginalne dane"></textarea>
+
+    <div class="row">
+      <button class="btn primary" id="restoreBtn">Przywróć oryginalne dane</button>
+      <button class="btn" id="clear2Btn" title="Wyczyść pola Kroku 2">Wyczyść</button>
+    </div>
+
+    <h3>Wynik — oryginalne dane</h3>
+    <textarea id="out2" class="out" readonly spellcheck="false" autocomplete="off" placeholder="Tu pojawi się odtworzony tekst…"></textarea>
+    <div class="muted" id="stats2" aria-live="polite"></div>
+    <button class="btn primary big" id="copy2">Kopiuj gotowy wynik</button>
+  </section>
+</main>
+
+<footer class="note">
+  <div><b>Model bezpieczeństwa.</b> Strona działa wyłącznie lokalnie: polityka CSP <code>default-src 'none'</code> blokuje każde połączenie sieciowe i zasób zewnętrzny,
+  nic nie jest zapisywane na dysku (brak localStorage / sessionStorage / IndexedDB / cookies) — słownik mapowań istnieje tylko w pamięci RAM tej karty
+  i znika po jej zamknięciu lub po użyciu <b>PANIC</b> (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>).
+  Silnik detekcji jest heurystyczny — <b>zawsze przejrzyj zanonimizowany tekst przed wysłaniem</b> i w razie potrzeby dodaj maskowanie ręczne.
+  JavaScript nie pozwala fizycznie wyzerować pamięci: PANIC usuwa wszystkie referencje, nadpisuje pola i próbuje wymusić GC (best-effort).</div>
+  <div class="foot-author"><span>Anonimizer · Air-gapped / Zero Network Footprint</span><span>Autor: <b>hatterp</b></span></div>
+</footer>
+
+<div id="toast" role="status"></div>
+
+<script>
+'use strict';
+(() => {
+
+/* =====================================================================
+ *  SILNIK DETEKCJI I MASKOWANIA (czysta logika, bez DOM)
+ * ===================================================================== */
+// ==== ENGINE START ====
+
+const TOGGLES = ['IP', 'EMAIL', 'SECRET', 'TOKEN', 'HOST', 'MAC', 'ID', 'USER', 'PORT', 'PII'];
+
+// Placeholder wygenerowany przez aplikację, np. <IP_01> — nigdy nie maskujemy ich ponownie.
+const PH = /^<[A-Za-z][A-Za-z0-9_]{0,30}_\d{1,6}>$/;
+const PH_SCAN = /<[A-Za-z][A-Za-z0-9_]{0,30}_\d{1,6}>/g;
+
+const isAlnum = c => c !== '' && /[A-Za-z0-9]/.test(c);
+const isDigit = c => c !== '' && c >= '0' && c <= '9';
+const isWord = c => c !== '' && /[A-Za-z0-9_ĄĆĘŁŃÓŚŹŻąćęłńóśźż]/.test(c);
+
+function entropy(s) {
+  const f = new Map();
+  for (const c of s) f.set(c, (f.get(c) || 0) + 1);
+  let h = 0;
+  for (const n of f.values()) { const p = n / s.length; h -= p * Math.log2(p); }
+  return h;
+}
+
+/* ---------- 1. Klucze prywatne PEM, certyfikaty, bloki PGP ---------- */
+const PEM = /-----BEGIN [A-Z0-9 ]*(?:PRIVATE KEY|CERTIFICATE(?: REQUEST)?|PGP (?:PRIVATE KEY|MESSAGE))(?: BLOCK)?-----[\s\S]*?(?:-----END [A-Z0-9 ]*(?:PRIVATE KEY|CERTIFICATE(?: REQUEST)?|PGP (?:PRIVATE KEY|MESSAGE))(?: BLOCK)?-----|$)/g;
+function detectPEM(text, add) {
+  PEM.lastIndex = 0; let m;
+  while ((m = PEM.exec(text))) { add(m.index, m.index + m[0].length, 'SECRET', 1); if (m[0].length === 0) PEM.lastIndex++; }
+}
+
+/* ---------- 2. Bearer, JWT, SSH pubkeys, znane formaty kluczy ---------- */
+const BEARER = /\bBearer[ \t]+([A-Za-z0-9_\-.=]+)/gi;
+const BEARER_SKIP = /^(?:token|auth|authentication|authorization|header|scheme)$/i;
+function detectBearer(text, add) {
+  BEARER.lastIndex = 0; let m;
+  while ((m = BEARER.exec(text))) {
+    if (BEARER_SKIP.test(m[1])) continue;
+    const e = m.index + m[0].length;
+    add(e - m[1].length, e, 'TOKEN', 2);
+  }
+}
+const KNOWN = [
+  /\beyJ[A-Za-z0-9_\-]{5,}\.[A-Za-z0-9_\-]{5,}\.[A-Za-z0-9_\-]*/g,                    // JWT
+  /\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g,                                                      // AWS access key id
+  /\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{20,})\b/g,                   // GitHub
+  /\bglpat-[A-Za-z0-9_\-]{20,}/g,                                                        // GitLab
+  /\bxox[abprs]-[A-Za-z0-9\-]{10,}/g,                                                    // Slack
+  /\b(?:sk|rk)[_-](?:live|test|proj|ant|svcacct)?[A-Za-z0-9_\-]{16,}/g,                  // OpenAI / Anthropic / Stripe
+  /\bAIza[0-9A-Za-z_\-]{35}\b/g,                                                         // Google API key
+  /\b(?:hf_[A-Za-z0-9]{30,}|npm_[A-Za-z0-9]{30,}|pypi-[A-Za-z0-9_\-]{30,}|SG\.[A-Za-z0-9_\-]{16,}\.[A-Za-z0-9_\-]{16,}|hvs\.[A-Za-z0-9_\-]{20,})/g,
+  /\b(?:ssh-(?:rsa|ed25519|dss)|ecdsa-sha2-nistp(?:256|384|521))[ \t]+[A-Za-z0-9+\/]{24,}={0,3}(?:[ \t]+[A-Za-z0-9_.\-@]+)?/g // SSH public key
+];
+function detectKnownTokens(text, add) {
+  for (const re of KNOWN) {
+    re.lastIndex = 0; let m;
+    while ((m = re.exec(text))) add(m.index, m.index + m[0].length, 'TOKEN', 2);
+  }
+}
+
+/* ---------- 3. Pary klucz-wartość (=, :, :=, =>) ---------- */
+const KW = /password|passwd|passphrase|pass(?![a-z])|pwd(?![a-z])|psk(?![a-z])|secret|token|(?:api|private|access|signing|encryption|master|session|ssh|pre[_-]?shared|account|shared[_-]?access)[_-]?key|shared[_-]?access[_-]?signature|auth(?:orization)?(?![a-z])|credential|\b(?:cvc|cvv2?)\b/gi;
+const KEYCH = /[A-Za-z0-9_.\-]/;
+const SEP = /[ \t]*(?::=|=>|=|:)[ \t]*/y;
+const SEP_CLI = /[ \t]+/y;
+const VAL = /(?:(?:Bearer|Basic|Digest|Token|Api-?Key|Bot)[ \t]+)?(?:"((?:[^"\\\r\n]|\\.)*)"|'((?:[^'\\\r\n]|\\.)*)'|`((?:[^`\\\r\n]|\\.)*)`|([^\s"'`,;&<>()\[\]{}]+))/y;
+const SKIPVAL = /^(?:true|false|null|none|nil|undefined|string|number|boolean|str|int|bearer|basic|digest|apikey|api-key)$/i;
+function detectKV(text, add) {
+  KW.lastIndex = 0; let m, keyEnd = 0;
+  while ((m = KW.exec(text))) {
+    if (m.index < keyEnd) continue;
+    if (m[0].toLowerCase() === 'pass' && m.index > 0 && /[A-Za-z]/.test(text[m.index - 1]) && !(/[a-z]/.test(text[m.index - 1]) && m[0][0] === 'P')) continue; // odrzuca bypass/BYPASS/compass, zostawia dbPass/db_pass
+    let ks = m.index;                                   // początek nazwy klucza (limit 64 zn.)
+    while (ks > 0 && m.index - ks < 64 && KEYCH.test(text[ks - 1])) ks--;
+    if (ks >= 3 && text.slice(ks - 3, ks) === '://') continue; // userinfo w URL obsługuje detectUrlCreds
+    let k = m.index + m[0].length;                      // koniec nazwy klucza
+    while (k < text.length && KEYCH.test(text[k])) k++;
+    keyEnd = k;
+    const q = text[k];
+    if (q === '"' || q === "'" || q === '`') k++;       // zamykający cudzysłów klucza (JSON/słownik)
+    if (text[k] === ']' && (q === '"' || q === "'" || q === '`' || (ks > 0 && text[ks - 1] === '['))) k++; // cfg["password"] = …
+    SEP.lastIndex = k;
+    let sm = SEP.exec(text);
+    if (!sm && text.startsWith('--', ks)) { SEP_CLI.lastIndex = k; sm = SEP_CLI.exec(text); }  // --password hunter2
+    if (!sm) continue;
+    const vpos = k + sm[0].length;
+    VAL.lastIndex = vpos;
+    const vm = VAL.exec(text);
+    if (!vm) continue;
+    const quoted = vm[4] === undefined;
+    const v = vm[1] !== undefined ? vm[1] : vm[2] !== undefined ? vm[2] : vm[3] !== undefined ? vm[3] : vm[4];
+    if (!v || !/[A-Za-z0-9]/.test(v) || SKIPVAL.test(v)) continue;
+    if (v[0] === '$' || v[0] === '%' || v.startsWith('{{')) continue;     // odwołania do zmiennych/szablonów
+    const e = vpos + vm[0].length - (quoted ? 1 : 0);
+    add(e - v.length, e, 'SECRET', 3);
+  }
+}
+// Konfiguracje sieciowe i serwerowe (Cisco, BGP, OSPF, SNMP, RADIUS/TACACS, WPA, Redis, SQL, curl -u)
+const NET_SEC = [
+  /\b(?:password|secret|key|key-string|authentication-key)[ \t]+[0-9][ \t]+(\S+)/gi,
+  /\b(?:tacacs-server|radius-server)[ \t]+key(?:[ \t]+[0-9])?[ \t]+(\S+)/gi,
+  /\bsnmp-server[ \t]+community[ \t]+(\S+)/gi,
+  /\bneighbor[ \t]+\S+[ \t]+password(?:[ \t]+[0-9])?[ \t]+(\S+)/gi,
+  /\bmessage-digest-key[ \t]+\d+[ \t]+md5(?:[ \t]+[0-9])?[ \t]+(\S+)/gi,
+  /\bcrypto[ \t]+isakmp[ \t]+key(?:[ \t]+[0-9])?[ \t]+(\S+)/gi,
+  /\b(?:requirepass|masterauth|wpa-psk|wpa-passphrase|identified[ \t]+by)[ \t]+(?:"([^"\r\n]+)"|'([^'\r\n]+)'|(\S+))/gi
+];
+const CURL_U = /(?:^|[ \t])(?:-u|--user)[ \t]+["']?([A-Za-z0-9_.\-@]+):([^\s"']+)["']?/gm;
+function detectCisco(text, add) {
+  for (const re of NET_SEC) {
+    re.lastIndex = 0; let m;
+    while ((m = re.exec(text))) {
+      const v = m[1] || m[2] || m[3];
+      if (!v || PH.test(v)) continue;
+      const quoted = m[3] === undefined && (m[1] !== undefined || m[2] !== undefined) && /["']$/.test(m[0]);
+      const e = m.index + m[0].length - (quoted ? 1 : 0);
+      add(e - v.length, e, 'SECRET', 3);
+    }
+  }
+  CURL_U.lastIndex = 0; let cm;
+  while ((cm = CURL_U.exec(text))) {
+    const full = cm[0], u = cm[1], p = cm[2];
+    const trailQ = /["']$/.test(full) ? 1 : 0;
+    const pe = cm.index + full.length - trailQ;
+    const ps = pe - p.length;
+    add(ps - 1 - u.length, ps - 1, 'USER', 3);
+    add(ps, pe, 'SECRET', 3);
+  }
+}
+// Poświadczenia w URL: scheme://USER:HASŁO@host lub scheme://USER@host
+const UINFO = /([^\s\/:@"'<>?#]+)(?::([^\s\/"'<>?#]+))?@/y;
+function detectUrlCreds(text, add) {
+  let i = -1;
+  while ((i = text.indexOf('://', i + 1)) !== -1) {
+    let s = i; while (s > 0 && i - s < 20 && /[A-Za-z0-9+.\-]/.test(text[s - 1])) s--;
+    if (s === i) continue;
+    UINFO.lastIndex = i + 3;
+    const m = UINFO.exec(text);
+    if (!m) continue;
+    const us = i + 3, ue = us + m[1].length;
+    add(us, ue, 'USER', 3);
+    if (m[2] !== undefined) {
+      const pe = i + 3 + m[0].length - 1;               // przed '@'
+      add(pe - m[2].length, pe, 'SECRET', 3);
+    }
+  }
+}
+
+/* ---------- 4. E-mail ---------- */
+const MAILDOM = /[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)+/y;
+function detectEmail(text, add) {
+  let i = -1;
+  while ((i = text.indexOf('@', i + 1)) !== -1) {
+    let s = i; while (s > 0 && i - s < 64 && /[A-Za-z0-9._%+\-]/.test(text[s - 1])) s--;
+    if (s === i) continue;
+    MAILDOM.lastIndex = i + 1;
+    const dm = MAILDOM.exec(text);
+    if (!dm || /\.\d+$/.test(dm[0])) continue;          // odrzuca np. npm pkg@1.2.3
+    add(s, i + 1 + dm[0].length, 'EMAIL', 4);
+  }
+}
+
+/* ---------- 5. IPv6 / MAC ---------- */
+const V4STRICT = /^\d{1,3}(?:\.\d{1,3}){3}$/;
+const validV4 = s => V4STRICT.test(s) && s.split('.').every(p => +p <= 255);
+function validV6(s) {
+  if (s === '::' || !/^[0-9A-Fa-f:.]+$/.test(s) || !/[0-9A-Fa-f]/.test(s)) return false;
+  if (s.includes(':::')) return false;
+  const dbl = s.indexOf('::');
+  if (dbl !== s.lastIndexOf('::')) return false;
+  let body = s;
+  if (s.includes('.')) {
+    const lc = s.lastIndexOf(':');
+    if (!validV4(s.slice(lc + 1))) return false;
+    body = s.slice(0, lc + 1) + '0:0';                  // ogon IPv4 = 2 grupy
+  }
+  const G = /^[0-9A-Fa-f]{1,4}$/;
+  if (dbl === -1) { const g = body.split(':'); return g.length === 8 && g.every(x => G.test(x)); }
+  const [l, r] = body.split('::');
+  const all = (l ? l.split(':') : []).concat(r ? r.split(':') : []);
+  return all.length <= 7 && all.every(x => G.test(x));
+}
+const HEXC = /[0-9A-Fa-f:.]/;
+function detectIPv6(text, add) {
+  const n = text.length; let i = 0;
+  while (i < n) {
+    if (!HEXC.test(text[i])) { i++; continue; }
+    let j = i; while (j < n && HEXC.test(text[j])) j++;
+    const runStart = i; i = j;
+    if (j - runStart > 60) continue;
+    let s = runStart, str = text.slice(s, j);
+    if (!str.includes(':')) continue;
+    if (str[0] === ':' && str[1] !== ':') { s++; str = str.slice(1); }
+    let ok = false;
+    for (let t = 0; t < 4; t++) {
+      if (validV6(str)) { ok = true; break; }
+      if (/[.:]$/.test(str)) str = str.slice(0, -1); else break;
+    }
+    if (!ok) continue;
+    let e = s + str.length;
+    if (isAlnum(text.charAt(s - 1)) || isAlnum(text.charAt(e))) continue;
+    if (text.charAt(e) === '/') {
+      const cm = /^\/(\d{1,3})(?!\d)/.exec(text.slice(e, e + 5));
+      if (cm && +cm[1] <= 128) e += cm[0].length;
+    }
+    add(s, e, 'IP', 5);
+  }
+}
+const MAC1 = /\b[0-9A-Fa-f]{2}(?:[:\-][0-9A-Fa-f]{2}){5}\b/g;
+const MAC2 = /\b[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\b/g;
+function detectMAC(text, add) {
+  for (const re of [MAC1, MAC2]) {
+    re.lastIndex = 0; let m;
+    while ((m = re.exec(text))) add(m.index, m.index + m[0].length, 'MAC', 5);
+  }
+}
+
+/* ---------- 6. IPv4 (+CIDR, z ochroną numerów wersji) ---------- */
+const V4 = /\d{1,3}(?:\.\d{1,3}){3}(?:\/\d{1,2})?/g;
+const VER_CTX = /(?:^|[\s"'\[({,;])[A-Za-z0-9_.\-]*(?:version|ver|release|build|firmware|kernel|schema)[A-Za-z0-9_.\-]*["'`]?\]?[ \t]*(?::=|=>|=|:)[ \t]*["'`]?v?$/i;
+function detectIPv4(text, add) {
+  V4.lastIndex = 0; let m;
+  while ((m = V4.exec(text))) {
+    let str = m[0]; const s = m.index;
+    const sl = str.indexOf('/');
+    const ip = sl === -1 ? str : str.slice(0, sl);
+    if (!validV4(ip)) continue;
+    if (sl !== -1 && +str.slice(sl + 1) > 32) str = ip;
+    const e = s + str.length;
+    const pc = text.charAt(s - 1), nc = text.charAt(e);
+    if (isDigit(pc) || (pc === '.' && isDigit(text.charAt(s - 2)))) continue;   // część dłuższej liczby/wersji
+    if (isDigit(nc) || (nc === '.' && isDigit(text.charAt(e + 1)))) continue;
+    if (sl === -1) {
+      if ((pc === 'v' || pc === 'V') && !isWord(text.charAt(s - 2))) continue;   // v1.2.3.4
+      if (nc === '+' || (nc === '-' && /[A-Za-z]/.test(text.charAt(e + 1)))) continue; // 1.2.3.4-beta
+      if (VER_CTX.test(text.slice(Math.max(0, s - 80), s))) continue;            // 'version' => '30.0.1.2'
+    }
+    add(s, e, 'IP', 6);
+  }
+}
+
+/* ---------- 7. FQDN oraz hosty w wewnętrznych URL ----------
+ * Lista końcówek jest celowo zawężona: pomijamy te, które kolidują z kodem
+ * (np. .py .sh .md .rs .info .test .app .at .is .it .no .in .id — "obj.info", "arr.at").
+ * Niejednoznaczne domeny można zamaskować ręcznie. */
+const TLD_SET = new Set(['com','net','org','edu','gov','mil','biz','io','co','eu','pl','de','uk','fr','nl','cz','sk','ru','ua','se','fi','dk',
+  'ch','ca','au','jp','cn','br','es','pt','gr','hu','ro','bg','hr','si','lt','lv','ee','ie','il','kr','tw','hk','sg','nz','za','mx',
+  'ai','cloud','online','site','tech','xyz','dev','local','lan','internal','corp','intranet','localdomain','arpa','svc','consul','k8s']);
+const CONFIG_HOST_SKIP = /^(?:memcache|cache|session|cookie|storage|config|settings|env|default|local|system|module|plugin|theme|debug|logger?|route|router|webpack|vite|babel|rollup|eslint|composer)\.(?:local|dev|site|online|tech|cloud)$/i;
+const HOST_RUN = /[A-Za-z0-9_](?:[A-Za-z0-9_\-]{0,61}[A-Za-z0-9_])?(?:\.[A-Za-z0-9_](?:[A-Za-z0-9_\-]{0,61}[A-Za-z0-9_])?)+/g;
+const URL_HOST = /\b(?:https?|wss?|ftp|sftp|ldaps?|postgres(?:ql)?|mysql|redis|rediss|mongodb(?:\+srv)?|amqps?|ssh|smb|grpc|nats):\/\/(?:[^\s\/:@"'<>?#]+(?::[^\s\/"'<>?#]*)?@)?([A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?)*)/gi;
+const CFG_HOST = /^[ \t]*(?:hostname|HostName|server_name)[ \t]+([A-Za-z0-9][A-Za-z0-9._\-]{1,62})(?=[ \t;]|$)/gm;
+const KV_HOST = /\b(?:hostname|host[_-]?name|server[_-]?name)(?:"|'|`)?[ \t]*(?::=|=>|=|:)[ \t]*(?:"([A-Za-z0-9][A-Za-z0-9._\-]{1,62})"|'([A-Za-z0-9][A-Za-z0-9._\-]{1,62})'|([A-Za-z0-9][A-Za-z0-9._\-]{1,62}))/gi;
+function detectHost(text, add) {
+  HOST_RUN.lastIndex = 0; let m;
+  while ((m = HOST_RUN.exec(text))) {
+    const str = m[0], s = m.index, e = s + str.length;
+    const dot = str.lastIndexOf('.');
+    if (dot === -1 || !TLD_SET.has(str.slice(dot + 1).toLowerCase())) continue;
+    if (text.charAt(e) === '(' || CONFIG_HOST_SKIP.test(str)) continue;         // wywołanie funkcji / klucz konfig. (memcache.local)
+    if (/^['"`]?[ \t]*=>[ \t]*['"`]?\\/.test(text.slice(e, e + 24))) continue;   // klucz PHP przed nazwą klasy (\OC\...)
+    add(s, e, 'HOST', 7);
+  }
+  URL_HOST.lastIndex = 0;
+  while ((m = URL_HOST.exec(text))) {
+    const host = m[1];
+    if (!host || host.toLowerCase() === 'localhost' || validV4(host)) continue;
+    const e = m.index + m[0].length;
+    add(e - host.length, e, 'HOST', 7);
+  }
+  CFG_HOST.lastIndex = 0;
+  while ((m = CFG_HOST.exec(text))) {
+    const host = m[1];
+    if (!host || host.toLowerCase() === 'localhost' || validV4(host)) continue;
+    const e = m.index + m[0].length;
+    add(e - host.length, e, 'HOST', 7);
+  }
+  KV_HOST.lastIndex = 0;
+  while ((m = KV_HOST.exec(text))) {
+    const host = m[1] || m[2] || m[3];
+    if (!host || /^(?:localhost|true|false|null|none)$/i.test(host) || validV4(host)) continue;
+    const quoted = m[3] === undefined;
+    const e = m.index + m[0].length - (quoted ? 1 : 0);
+    add(e - host.length, e, 'HOST', 7);
+  }
+}
+
+/* ---------- 8. Identyfikatory (UUID, ID kont/zasobów, ARN, IBAN, karty, dokumenty, sygnatury) ---------- */
+const UUID_RE = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+const CLOUD_ID = [
+  /\barn:aws[a-z\-]*:[a-z0-9\-]+:[a-z0-9\-]*:\d{12}:[^\s"'`,;&<>()\[\]{}]+/gi,
+  /\b(?:i|vpc|subnet|sg|igw|nat|rtb|eni|vol|snap|ami|eipalloc|acl|pcx|vgw|cgw|tgw|lt|fl)-[0-9a-f]{8,17}\b/gi,
+  /\b\d{10,}-[a-z0-9]{16,}\.apps\.googleusercontent\.com\b/gi
+];
+const CLOUD_PATH_ID = /\b(?:projects|subscriptions|resourceGroups|tenants|organizations|folders|billingAccounts)\/([A-Za-z0-9][A-Za-z0-9._\-]{2,63})\b/g;
+const IBAN_RE = /\b[A-Z]{2}[ ]?\d{2}(?:[ ]?[A-Z0-9]{4}){3,7}(?:[ ]?[A-Z0-9]{1,3})?\b/g;
+const NRB_RE = /\b\d{2}(?:[ ]?\d{4}){6}\b/g;
+const CARD_FMT = /\b(?:[3-6]\d{3}([ \-])\d{4}\1\d{4}\1\d{4}|3[47]\d{2}([ \-])\d{6}\2\d{5})\b/g;
+const CARD_RAW = /\b(?:4\d{12}(?:\d{3})?|5[1-5]\d{14}|2(?:2[2-9][1-9]|[3-6]\d\d|7(?:[01]\d|20))\d{12}|3[47]\d{13}|6(?:011|5\d{2})\d{12})\b/g;
+function luhnOk(d) {
+  let sum = 0, alt = false;
+  for (let i = d.length - 1; i >= 0; i--) {
+    let n = d.charCodeAt(i) - 48;
+    if (alt) { n *= 2; if (n > 9) n -= 9; }
+    sum += n; alt = !alt;
+  }
+  return sum % 10 === 0;
+}
+const DOC_ID_LINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:(?:numer|nr)[ \t]+(?:dowodu(?:[ \t]+osobistego)?|paszportu?|prawa[ \t]+jazdy|polisy|umowy|sprawy|zgłoszenia|konta|rachunku|klienta|pacjenta|pracownika|krs)|dowód[ \t]+osobisty|id[ \t]+(?:card|document|number)|passport[ \t]+(?:no|num|number)|driver(?:'s)?[ \t]+license|sygnatura(?:[ \t]+akt)?|sygn\.[ \t]+akt)(?:[ \t]*\([^)\r\n]{1,30}\))?(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*:[ \t]*([^\r\n]{2,120})/gi;
+const CASE_ID = /\b(?:sygn\.?(?:[ \t]+akt)?[ \t]+(?:[A-Z0-9]{1,6}[ \t]+){0,3}|(?:KM|KMS|KMP|GKM)[ \t]+)\d{1,6}\/\d{2,4}\b/g;
+const ID_KW = /\b(?:(?:client|tenant|account|org(?:anization)?|project|subscription|user|customer|merchant|app(?:lication)?|workspace|cluster|instance|node|zone|key|access[_-]?key|session|device|container|pod|namespace|resource|directory|object|principal|role|group|member|chat|channel|guild|bot|webhook|corr(?:elation)?|trace|span|request|req|tx|transaction|order|invoice|ticket|emp(?:loyee)?|host|machine|server|hardware)[_-]?id|serial[_-]?(?:number|no|num)?|nip|pesel|regon|krs|iban|tax[_-]?id|(?:account|card|routing|policy|contract|license)[_-]?(?:number|no|num))\b/gi;
+const SKIP_ID_VAL = /^(?:true|false|null|none|nil|undefined|string|number|boolean|str|int|uuid|id|auto|default|self|this|brak|n\/a|nd)$/i;
+
+function detectIDs(text, add) {
+  UUID_RE.lastIndex = 0; let m;
+  while ((m = UUID_RE.exec(text))) add(m.index, m.index + m[0].length, 'ID', 4);
+  for (const re of CLOUD_ID) {
+    re.lastIndex = 0;
+    while ((m = re.exec(text))) add(m.index, m.index + m[0].length, 'ID', 4);
+  }
+  CLOUD_PATH_ID.lastIndex = 0;
+  while ((m = CLOUD_PATH_ID.exec(text))) {
+    const e = m.index + m[0].length;
+    add(e - m[1].length, e, 'ID', 4);
+  }
+  IBAN_RE.lastIndex = 0;
+  while ((m = IBAN_RE.exec(text))) {
+    const clean = m[0].replace(/ /g, '');
+    const digits = (clean.match(/\d/g) || []).length;
+    if (clean.length >= 15 && clean.length <= 34 && digits >= 10) add(m.index, m.index + m[0].length, 'ID', 3);
+  }
+  NRB_RE.lastIndex = 0;
+  while ((m = NRB_RE.exec(text))) {
+    if (!isDigit(text.charAt(m.index - 1)) && !isDigit(text.charAt(m.index + m[0].length))) {
+      add(m.index, m.index + m[0].length, 'ID', 3);
+    }
+  }
+  CARD_FMT.lastIndex = 0;
+  while ((m = CARD_FMT.exec(text))) add(m.index, m.index + m[0].length, 'ID', 3);
+  CARD_RAW.lastIndex = 0;
+  while ((m = CARD_RAW.exec(text))) {
+    if (luhnOk(m[0])) add(m.index, m.index + m[0].length, 'ID', 3);
+  }
+  CASE_ID.lastIndex = 0;
+  while ((m = CASE_ID.exec(text))) add(m.index, m.index + m[0].length, 'ID', 4);
+  DOC_ID_LINE.lastIndex = 0;
+  while ((m = DOC_ID_LINE.exec(text))) {
+    let val = m[1].trim(), s = m.index + m[0].length - m[1].length, e = s + val.length;
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1).trim(); s++; e = s + val.length;
+    }
+    if (!val || SKIP_ID_VAL.test(val) || val[0] === '$' || val[0] === '%' || val.startsWith('{{')) continue;
+    add(s, e, 'ID', 4);
+  }
+
+  ID_KW.lastIndex = 0; let keyEnd = 0;
+  while ((m = ID_KW.exec(text))) {
+    if (m.index < keyEnd) continue;
+    let ks = m.index;
+    while (ks > 0 && m.index - ks < 64 && KEYCH.test(text[ks - 1])) ks--;
+    if (ks >= 3 && text.slice(ks - 3, ks) === '://') continue;
+    let k = m.index + m[0].length;
+    while (k < text.length && KEYCH.test(text[k])) k++;
+    keyEnd = k;
+    const q = text[k];
+    if (q === '"' || q === "'" || q === '`') k++;
+    if (text[k] === ']' && (q === '"' || q === "'" || q === '`' || (ks > 0 && text[ks - 1] === '['))) k++;
+    SEP.lastIndex = k;
+    let sm = SEP.exec(text);
+    if (!sm && text.startsWith('--', ks)) { SEP_CLI.lastIndex = k; sm = SEP_CLI.exec(text); }
+    if (!sm) continue;
+    const vpos = k + sm[0].length;
+    VAL.lastIndex = vpos;
+    const vm = VAL.exec(text);
+    if (!vm) continue;
+    const quoted = vm[4] === undefined;
+    const v = vm[1] !== undefined ? vm[1] : vm[2] !== undefined ? vm[2] : vm[3] !== undefined ? vm[3] : vm[4];
+    if (!v || !/[A-Za-z0-9]/.test(v) || SKIP_ID_VAL.test(v)) continue;
+    if (v[0] === '$' || v[0] === '%' || v.startsWith('{{')) continue;
+    const e = vpos + vm[0].length - (quoted ? 1 : 0);
+    add(e - v.length, e, 'ID', 4);
+  }
+}
+
+/* ---------- 9. Użytkownicy / loginy (dbuser, superuser, login, username, sudo/ssh, ścieżki) ---------- */
+const USER_KW = /(?<![A-Za-z0-9])(?:[A-Za-z0-9]*user(?:[_-]?\d+)?|[A-Za-z0-9]*username(?:[_-]?\d+)?|[A-Za-z0-9]*user[_-]?name(?:[_-]?\d+)?|[A-Za-z0-9]*login(?:[_-]?(?:name|\d+)|\d*)?|account[_-]?name|service[_-]?account|owner(?:[_-]?\d+)?)\b/gi;
+const USER_SKIP_PREFIX = /^(?:ab|acc|ca|diff|exc|ref|tro|pa|m|r|caro|delo)user$/i;
+const CISCO_USER = /\busername[ \t]+([A-Za-z0-9_.\-]+)(?=[ \t]+(?:password|secret|privilege|nopassword|algorithm-type)\b)/gi;
+const LDAP_ID = /\b(?:uid|cn|sAMAccountName)=([^,;\s"'<>]+)(?=(?:,[ \t]*(?:ou|cn|dc|o)=)+)/gi;
+const HOME_USER = /(?:\/home\/|\/Users\/|[A-Za-z]:\\Users\\)([A-Za-z0-9_.\-]+)/g;
+const HOME_SKIP = /^(?:Shared|Public|Default)$/i;
+const SSH_IP_USER = /(?<![A-Za-z0-9_.\-\/])([A-Za-z0-9_.\-]+)@(?=\d{1,3}(?:\.\d{1,3}){3}\b)/g;
+const CLI_CMD_USER = /\b(?:psql|pg_dump|pg_restore|createuser|mysql|mysqldump|mariadb|sudo|su)[ \t]+(?:[^|\r\n;&]{0,80}?[ \t]+)?(?:-[uU][ \t]+|--user(?:name)?(?:=|[ \t]+))["']?([A-Za-z0-9_.\-]+)/g;
+const SQL_USER = /\b(?:CREATE|ALTER)[ \t]+USER[ \t]+(?:IF[ \t]+(?:NOT[ \t]+)?EXISTS[ \t]+)?["'`]?([A-Za-z0-9_.\-]+)/gi;
+const SQL_USER_SKIP = /^(?:IF|CURRENT_USER|SESSION_USER|PUBLIC|NONE)$/i;
+const LOG_USER = [
+  /\b(?:Failed|Accepted)[ \t]+(?:password|publickey|keyboard-interactive\/pam)[ \t]+for[ \t]+(?:invalid[ \t]+user[ \t]+)?([A-Za-z0-9_.\-]+)(?=[ \t]+from\b)/g,
+  /\bsudo:[ \t]+([A-Za-z0-9_.\-]+)(?=[ \t]+:)/g
+];
+
+function detectUsers(text, add) {
+  let m;
+  CISCO_USER.lastIndex = 0;
+  while ((m = CISCO_USER.exec(text))) {
+    const e = m.index + m[0].length;
+    add(e - m[1].length, e, 'USER', 3);
+  }
+  LDAP_ID.lastIndex = 0;
+  while ((m = LDAP_ID.exec(text))) {
+    const e = m.index + m[0].length;
+    add(e - m[1].length, e, 'USER', 3);
+  }
+  HOME_USER.lastIndex = 0;
+  while ((m = HOME_USER.exec(text))) {
+    if (HOME_SKIP.test(m[1])) continue;
+    const e = m.index + m[0].length;
+    add(e - m[1].length, e, 'USER', 3);
+  }
+  SSH_IP_USER.lastIndex = 0;
+  while ((m = SSH_IP_USER.exec(text))) {
+    const at = m.index + m[1].length;
+    const ipMatch = /^\d{1,3}(?:\.\d{1,3}){3}/.exec(text.slice(at + 1, at + 17));
+    if (ipMatch && validV4(ipMatch[0])) add(m.index, at, 'USER', 3);
+  }
+  CLI_CMD_USER.lastIndex = 0;
+  while ((m = CLI_CMD_USER.exec(text))) {
+    const e = m.index + m[0].length;
+    add(e - m[1].length, e, 'USER', 3);
+  }
+  SQL_USER.lastIndex = 0;
+  while ((m = SQL_USER.exec(text))) {
+    if (SQL_USER_SKIP.test(m[1])) continue;
+    const e = m.index + m[0].length;
+    add(e - m[1].length, e, 'USER', 3);
+  }
+  for (const re of LOG_USER) {
+    re.lastIndex = 0;
+    while ((m = re.exec(text))) {
+      const e = m.index + m[0].length;
+      add(e - m[1].length, e, 'USER', 3);
+    }
+  }
+  USER_KW.lastIndex = 0;
+  while ((m = USER_KW.exec(text))) {
+    if (USER_SKIP_PREFIX.test(m[0])) continue;
+    let ks = m.index;
+    while (ks > 0 && m.index - ks < 64 && KEYCH.test(text[ks - 1])) ks--;
+    if (ks >= 3 && text.slice(ks - 3, ks) === '://') continue;
+    let k = m.index + m[0].length;
+    const q = text[k];
+    if (q === '"' || q === "'" || q === '`') k++;
+    if (text[k] === ']' && (q === '"' || q === "'" || q === '`' || (ks > 0 && text[ks - 1] === '['))) k++;
+    SEP.lastIndex = k;
+    let sm = SEP.exec(text);
+    if (!sm && text.startsWith('--', ks)) { SEP_CLI.lastIndex = k; sm = SEP_CLI.exec(text); }
+    if (!sm) continue;
+    const vpos = k + sm[0].length;
+    VAL.lastIndex = vpos;
+    const vm = VAL.exec(text);
+    if (!vm) continue;
+    const quoted = vm[4] === undefined;
+    const v = vm[1] !== undefined ? vm[1] : vm[2] !== undefined ? vm[2] : vm[3] !== undefined ? vm[3] : vm[4];
+    if (!v || !/[A-Za-z0-9]/.test(v) || SKIP_ID_VAL.test(v)) continue;
+    if (v[0] === '$' || v[0] === '%' || v.startsWith('{{')) continue;
+    const e = vpos + vm[0].length - (quoted ? 1 : 0);
+    add(e - v.length, e, 'USER', 3);
+  }
+}
+
+/* ---------- 10. Porty sieciowe (port=, host:port, [ipv6]:port, listen/expose/DPT/-p/tcp) ---------- */
+const PORT_NUM = /^[1-9]\d{0,4}$/;
+const validPort = s => PORT_NUM.test(s) && +s <= 65535;
+const PORT_KW = /(?<![A-Za-z0-9])[A-Za-z0-9]*port(?:s(?![A-Za-z0-9])|[_-]?(?:no|num|number))?\b/gi;
+const PORT_SKIP_KEY = /^(?:support|report|import|export|transport|passport|viewport|airport|comport|deport|purport|disport|seaport|heliport|carport|spaceport|sport)s?(?:[_-]?(?:no|num|number))?$/i;
+const PORT_SKIP_CAMEL = /(?:Report|Support|Import|Export|Transport|Passport|Viewport|Airport)s?$/;
+const PORT_COLON_V4 = /(\d{1,3}(?:\.\d{1,3}){3}):([1-9]\d{0,4})(?::([1-9]\d{0,4}))?(?!\.\d)(?![A-Za-z0-9_:])/g;
+const PORT_COLON_V6 = /\[([0-9A-Fa-f:.]+)\]:([1-9]\d{0,4})(?!\.\d)(?![A-Za-z0-9_:])/g;
+const PORT_COLON_HOST = /(?:\/\/(?:[^\s\/:@"'<>?#]+(?::[^\s\/"'<>?#]*)?@)?|(?<![A-Za-z0-9_.\-]))([A-Za-z0-9_](?:[A-Za-z0-9_\-]{0,61}[A-Za-z0-9_])?(?:\.[A-Za-z0-9_](?:[A-Za-z0-9_\-]{0,61}[A-Za-z0-9_])?)*):([1-9]\d{0,4})(?!\.\d)(?![A-Za-z0-9_:])/g;
+const PORT_DIR = /(?:^[ \t]*(?:[Pp]ort|PORT|[Ll]isten|LISTEN|[Ee]xpose|EXPOSE)[ \t]+|\b(?:port|DPT|SPT)(?:=|:=|[ \t]+))([1-9]\d{0,4})(?=[ \t;\/,\)]|$)/gm;
+const PORT_DOCKER = /(?:^|[ \t])(?:-p|--publish)[ \t]+["']?(?:\d{1,3}(?:\.\d{1,3}){3}:)?([1-9]\d{0,4})(?::([1-9]\d{0,4}))?(?=[ \t"'\/]|$)/gm;
+const PORT_PROTO = /(?:(?<![A-Za-z0-9_.\/-])([1-9]\d{0,4}):)?(?<![A-Za-z0-9_.\/-])([1-9]\d{0,4})\/(?:tcp|udp)\b/gi;
+
+function detectPorts(text, add) {
+  let m;
+  PORT_COLON_V4.lastIndex = 0;
+  while ((m = PORT_COLON_V4.exec(text))) {
+    const s = m.index, ip = m[1], p1 = m[2], p2 = m[3];
+    if (!validV4(ip) || !validPort(p1)) continue;
+    const pc = text.charAt(s - 1);
+    if (isDigit(pc) || (pc === '.' && isDigit(text.charAt(s - 2)))) continue;
+    const idx1 = s + ip.length + 1;
+    add(idx1, idx1 + p1.length, 'PORT', 6);
+    if (p2 && validPort(p2)) {
+      const idx2 = idx1 + p1.length + 1;
+      add(idx2, idx2 + p2.length, 'PORT', 6);
+    }
+  }
+  PORT_COLON_V6.lastIndex = 0;
+  while ((m = PORT_COLON_V6.exec(text))) {
+    const inner = m[1], p = m[2];
+    if (!validPort(p) || (inner !== '::' && !validV6(inner))) continue;
+    const e = m.index + m[0].length;
+    add(e - p.length, e, 'PORT', 6);
+  }
+  PORT_COLON_HOST.lastIndex = 0;
+  while ((m = PORT_COLON_HOST.exec(text))) {
+    const host = m[1], p = m[2];
+    if (!validPort(p)) continue;
+    const hasScheme = m[0].includes('://');
+    if (!hasScheme) {
+      const dot = host.lastIndexOf('.');
+      const isLoc = host.toLowerCase() === 'localhost';
+      if (!isLoc && (dot === -1 || !TLD_SET.has(host.slice(dot + 1).toLowerCase()))) continue;
+    }
+    const e = m.index + m[0].length;
+    add(e - p.length, e, 'PORT', 6);
+  }
+  PORT_DIR.lastIndex = 0;
+  while ((m = PORT_DIR.exec(text))) {
+    const p = m[1];
+    if (!validPort(p)) continue;
+    const e = m.index + m[0].length;
+    add(e - p.length, e, 'PORT', 6);
+  }
+  PORT_DOCKER.lastIndex = 0;
+  while ((m = PORT_DOCKER.exec(text))) {
+    const p1 = m[1], p2 = m[2];
+    if (p1 && validPort(p1)) {
+      const idx1 = m.index + m[0].length - (p2 ? p2.length + 1 + p1.length : p1.length);
+      add(idx1, idx1 + p1.length, 'PORT', 6);
+    }
+    if (p2 && validPort(p2)) {
+      const e2 = m.index + m[0].length;
+      add(e2 - p2.length, e2, 'PORT', 6);
+    }
+  }
+  PORT_PROTO.lastIndex = 0;
+  while ((m = PORT_PROTO.exec(text))) {
+    const p1 = m[1], p2 = m[2];
+    if (p1 && validPort(p1)) add(m.index, m.index + p1.length, 'PORT', 6);
+    if (validPort(p2)) {
+      const idx2 = m.index + (p1 ? p1.length + 1 : 0);
+      add(idx2, idx2 + p2.length, 'PORT', 6);
+    }
+  }
+  PORT_KW.lastIndex = 0;
+  while ((m = PORT_KW.exec(text))) {
+    if (PORT_SKIP_KEY.test(m[0]) || PORT_SKIP_CAMEL.test(m[0])) continue;
+    let ks = m.index;
+    while (ks > 0 && m.index - ks < 64 && KEYCH.test(text[ks - 1])) ks--;
+    if (ks >= 3 && text.slice(ks - 3, ks) === '://') continue;
+    let k = m.index + m[0].length;
+    const q = text[k];
+    if (q === '"' || q === "'" || q === '`') k++;
+    if (text[k] === ']' && (q === '"' || q === "'" || q === '`' || (ks > 0 && text[ks - 1] === '['))) k++;
+    SEP.lastIndex = k;
+    let sm = SEP.exec(text);
+    if (!sm && text.startsWith('--', ks)) { SEP_CLI.lastIndex = k; sm = SEP_CLI.exec(text); }
+    if (!sm) continue;
+    const vpos = k + sm[0].length;
+    VAL.lastIndex = vpos;
+    const vm = VAL.exec(text);
+    if (!vm) continue;
+    const quoted = vm[4] === undefined;
+    const v = vm[1] !== undefined ? vm[1] : vm[2] !== undefined ? vm[2] : vm[3] !== undefined ? vm[3] : vm[4];
+    if (!v || !validPort(v)) continue;
+    const e = vpos + vm[0].length - (quoted ? 1 : 0);
+    add(e - v.length, e, 'PORT', 6);
+  }
+}
+
+/* ---------- 11. Długie hex / base64 (>= 32 znaków) ---------- */
+const LONG = /[A-Za-z0-9+\/_\-]{32,}={0,2}/g;
+function secretLike(c, padded) {
+  if (/^[A-Fa-f0-9]+$/.test(c)) return true;
+  if ((c.includes('/') || c.includes('+')) && (c.includes('_') || c.includes('-'))) return false; // mieszany alfabet: ścieżka/identyfikator
+  if (c.startsWith('/') && c.slice(1).includes('/')) return false;                                 // wielosegmentowa ścieżka Unix
+  const lower = /[a-z]/.test(c), upper = /[A-Z]/.test(c), digit = /\d/.test(c), sep = /[_\-\/+]/.test(c);
+  if (padded && lower && upper && !c.includes('_') && !c.includes('-')) return entropy(c) >= 3.5;
+  if (!digit) return false;
+  const classes = (lower ? 1 : 0) + (upper ? 1 : 0) + 1;
+  if (sep ? classes < 3 : classes < 2) return false;     // odrzuca snake_case_z_cyfra, ścieżki itp.
+  return entropy(c) >= 3.3;
+}
+function detectLong(text, add) {
+  LONG.lastIndex = 0; let m;
+  while ((m = LONG.exec(text))) {
+    const core = m[0].replace(/=+$/, '');
+    if (secretLike(core, m[0].length !== core.length)) add(m.index, m.index + m[0].length, 'TOKEN', 8);
+  }
+}
+
+/* ---------- 12. Dane osobowe / PII (telefony, daty ur., osoby, adresy, firmy) ---------- */
+const PHONE_INTL = /(?<![A-Za-z0-9.])\+(?:[1-9]\d{0,2}(?:[ \-](?:\(\d{1,4}\)|\d{1,4})){2,5}|[1-9]\d{7,14})(?![A-Za-z0-9.\-])/g;
+const PHONE_CTX = /(?<![A-Za-z0-9_])(?:telefon(?:[ \t]+kontaktowy)?|tel\.?|kom\.?|phone(?:[ \t]+number)?|mobile|cell|fax)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[^\r\n]{0,120}/gi;
+const PHONE_INNER = /(?:\(\d{2,4}\)|\b\d{2,4})(?:[ \-]\d{2,4}){1,4}\b|\b\d{9}\b/g;
+const DOB_LINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:data[ \t]+urodzenia|data[ \t]+ur\.?|rok[ \t]+urodzenia|date[ \t]+of[ \t]+birth|birth[ \t]?date|birth[ \t]?year|dob)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*:[ \t]*(\d{1,4}(?:[.\-\/]\d{1,2}[.\-\/]\d{2,4})?(?:[ \t]*r\.?)?)/gi;
+const PERSON_LINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:imi[eę][ \t]+i[ \t]+nazwisko|imi[eę]|nazwisko|first[ \t]+name|last[ \t]+name|full[ \t]+name|pacjent|konsultant|lekarz)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*:[ \t]*([^\r\n]{2,100})/gi;
+const PERSON_HON = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_\/.\-])(?:Pan(?:a|u|em|i|ią)?|dr\.?|lek\.|mgr|prof\.|mec\.|inż\.|Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)[ \t]+([A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,})?(?:[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,})?){0,2})/g;
+const PERSON_ROLE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:konsultant(?:em|a|owi|ką|ki)?|pacjent(?:em|a|owi|ką|ki)?|klient(?:em|a|owi|ką|ki)?|lekarz(?:em|a|owi)?|pracownik(?:iem|a|owi)?|pełnomocnik(?:iem|a)?|komornik(?:iem|a)?)[ \t]+(\(?)([A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,})?[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,})?)(?=\)?(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_]))/g;
+const PERSON_WORD = /[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]+/g;
+const PERSON_STRICT_VAL = /^["']?[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]+(?:[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]+){0,3}["']?$/;
+const TITLE_WORD = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]{4,}(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])/g;
+const ADDR_LINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:adres(?:[ \t]+(?:zamieszkania|korespondencyjny|dostawy|siedziby|firmy|domowy))?|(?:street|mailing|billing|shipping|home|residential)[ \t]+address|ulica|street|kod[ \t]+pocztowy|postal[ \t]+code|zip[ \t]+code)(?![ \t]+(?:e-?mail|ip|mac|url|host|server|serwera|strony|bramy|dns|proxy)\b)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*:[ \t]*([^\r\n]{3,160})/gi;
+const ADDR_INLINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:ul|al|pl)\.[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż\-]{2,}(?:[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ0-9][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9\/\-]*){0,3}(?:,[ \t]*\d{2}-\d{3}[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż\-]{2,}(?:,[ \t]*woj\.[ \t]+[a-ząćęłńóśźż\-]+)?)?(?:[ \t]+w[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]{2,})?/g;
+const POSTAL_CITY = /\b\d{2}-\d{3}[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]{2,}(?:[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]{2,})?(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])/g;
+const ORG_LINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:nazwa[ \t]+(?:firmy(?:[ \t]+odbiorcy|[ \t]+nadawcy)?|spółki|organizacji|klienta|placówki|instytucji)|company(?:[ \t]+name)?|organization)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*:[ \t]*([^\r\n]{2,120})/gi;
+const ORG_SUFFIX = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:[A-ZĄĆĘŁŃÓŚŹŻ][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9&.\-]{1,30}[ \t]+){1,5}(?:Sp\.[ \t]*z[ \t]*o\.o\.|Sp\.[ \t]*(?:k|j|p)\.|S\.A\.|GmbH|Inc\.|LLC|Ltd\.)/g;
+const ORG_FAC = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:placówk[aię]|placówce|placówką|klinik[aię]|klinice|szpital(?:a|u|em|owi)?|przychodni[aę]?)[ \t]+([A-ZĄĆĘŁŃÓŚŹŻ][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9\-]{2,})/g;
+const SKIP_PII_VAL = /^(?:true|false|null|none|nil|undefined|brak|n\/a|nd|unknown|string|str|int|test|admin|anon)$/i;
+const PII_SUBTYPES = new Set(['PHONE', 'PERSON', 'ADDRESS', 'ORG', 'DATE']);
+
+function detectPII(text, add) {
+  let m;
+  PHONE_INTL.lastIndex = 0;
+  while ((m = PHONE_INTL.exec(text))) {
+    const dig = m[0].replace(/\D/g, '');
+    if (dig.length >= 8 && dig.length <= 15) add(m.index, m.index + m[0].length, 'PHONE', 5);
+  }
+  PHONE_CTX.lastIndex = 0;
+  while ((m = PHONE_CTX.exec(text))) {
+    const seg = m[0]; let pm; PHONE_INNER.lastIndex = 0;
+    while ((pm = PHONE_INNER.exec(seg))) {
+      const dig = pm[0].replace(/\D/g, '');
+      if (dig.length >= 7 && dig.length <= 12) {
+        const s = m.index + pm.index;
+        if (s > 0 && text[s - 1] === '+') continue; // obejmuje już PHONE_INTL
+        add(s, s + pm[0].length, 'PHONE', 5);
+      }
+    }
+  }
+  DOB_LINE.lastIndex = 0;
+  while ((m = DOB_LINE.exec(text))) {
+    const e = m.index + m[0].length;
+    add(e - m[1].length, e, 'DATE', 5);
+  }
+  const personWords = new Set();
+  const addPersonParts = (str, base) => {
+    PERSON_WORD.lastIndex = 0; let wm;
+    while ((wm = PERSON_WORD.exec(str))) {
+      const w = wm[0];
+      if (w.length < 2 || SKIP_PII_VAL.test(w)) continue;
+      const ws = base + wm.index;
+      add(ws, ws + w.length, 'PERSON', 5);
+      if (w.length >= 5 && /^[A-ZĄĆĘŁŃÓŚŹŻ]/.test(w)) personWords.add(w);
+    }
+  };
+  PERSON_LINE.lastIndex = 0;
+  while ((m = PERSON_LINE.exec(text))) {
+    const raw = m[1], base = m.index + m[0].length - raw.length, t = raw.trim();
+    if (!t || SKIP_PII_VAL.test(t) || t[0] === '$' || t[0] === '%' || t.startsWith('{{') || PH.test(t)) continue;
+    if (/^(?:pacjent|konsultant|lekarz)/i.test(m[0]) && !PERSON_STRICT_VAL.test(t)) continue;
+    addPersonParts(raw, base);
+  }
+  PERSON_HON.lastIndex = 0;
+  while ((m = PERSON_HON.exec(text))) {
+    const base = m.index + m[0].length - m[1].length;
+    addPersonParts(m[1], base);
+  }
+  PERSON_ROLE.lastIndex = 0;
+  while ((m = PERSON_ROLE.exec(text))) {
+    const base = m.index + m[0].length - m[2].length;
+    addPersonParts(m[2], base);
+  }
+  if (personWords.size) {
+    TITLE_WORD.lastIndex = 0;
+    while ((m = TITLE_WORD.exec(text))) {
+      if (personWords.has(m[0])) add(m.index, m.index + m[0].length, 'PERSON', 5);
+    }
+  }
+  ADDR_LINE.lastIndex = 0;
+  while ((m = ADDR_LINE.exec(text))) {
+    const raw = m[1], trimmed = raw.trimEnd();
+    if (!trimmed || SKIP_PII_VAL.test(trimmed) || trimmed[0] === '$' || trimmed[0] === '%' || trimmed.startsWith('{{')) continue;
+    let s = m.index + m[0].length - raw.length, e = s + trimmed.length;
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) { s++; e--; }
+    add(s, e, 'ADDRESS', 6);
+  }
+  ADDR_INLINE.lastIndex = 0;
+  while ((m = ADDR_INLINE.exec(text))) add(m.index, m.index + m[0].length, 'ADDRESS', 6);
+  POSTAL_CITY.lastIndex = 0;
+  while ((m = POSTAL_CITY.exec(text))) add(m.index, m.index + m[0].length, 'ADDRESS', 6);
+
+  ORG_LINE.lastIndex = 0;
+  while ((m = ORG_LINE.exec(text))) {
+    const raw = m[1], trimmed = raw.trimEnd();
+    if (!trimmed || SKIP_PII_VAL.test(trimmed) || trimmed[0] === '$' || trimmed[0] === '%' || trimmed.startsWith('{{')) continue;
+    let s = m.index + m[0].length - raw.length, e = s + trimmed.length;
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) { s++; e--; }
+    add(s, e, 'ORG', 5);
+  }
+  ORG_SUFFIX.lastIndex = 0;
+  while ((m = ORG_SUFFIX.exec(text))) add(m.index, m.index + m[0].length, 'ORG', 5);
+  ORG_FAC.lastIndex = 0;
+  while ((m = ORG_FAC.exec(text))) {
+    const e = m.index + m[0].length;
+    add(e - m[1].length, e, 'ORG', 5);
+  }
+}
+
+const DETECTORS = [
+  [detectPEM, 'SECRET'], [detectBearer, 'TOKEN'], [detectKnownTokens, 'TOKEN'],
+  [detectKV, 'SECRET'], [detectCisco, 'SECRET', 'USER'], [detectUrlCreds, 'SECRET', 'USER'],
+  [detectUsers, 'USER'], [detectIDs, 'ID'], [detectEmail, 'EMAIL'], [detectIPv6, 'IP'],
+  [detectMAC, 'MAC'], [detectIPv4, 'IP'], [detectPorts, 'PORT'], [detectPII, 'PII'],
+  [detectHost, 'HOST'], [detectLong, 'TOKEN']
+];
+
+/* ---------- Skarbiec mapowań (tylko RAM) ---------- */
+function newVault() {
+  return {
+    byToken: new Map(),   // '<IP_01>' -> {type, value, manual}
+    byValue: new Map(),   // 'wartość' -> '<IP_01>'
+    counters: new Map(),  // typ -> ostatni numer
+    ignored: new Set(),   // wartości usunięte przez użytkownika — nie maskować ponownie
+    revealed: new Set(),  // tokeny z odsłoniętą wartością w tabeli
+    hits: new Map()       // token -> liczba wystąpień w bieżącym tekście
+  };
+}
+
+function textTokens(text) {
+  const set = new Set(); PH_SCAN.lastIndex = 0; let m;
+  while ((m = PH_SCAN.exec(text))) set.add(m[0]);
+  return set;
+}
+
+function registerToken(vault, type, value, manual, used) {
+  let n = vault.counters.get(type) || 0, tok;
+  do { n++; tok = '<' + type + '_' + String(n).padStart(2, '0') + '>'; }
+  while (vault.byToken.has(tok) || (used && used.has(tok)));   // nigdy nie koliduj z tokenami już obecnymi w tekście
+  vault.counters.set(type, n);
+  vault.byToken.set(tok, { type, value, manual: !!manual });
+  vault.byValue.set(value, tok);
+  return tok;
+}
+
+function detectAll(text, enabled, vault) {
+  const cands = [];
+  const catOf = t => PII_SUBTYPES.has(t) ? 'PII' : t;
+  const add = (s, e, type, pri) => {
+    if (s >= e || !enabled[catOf(type)]) return;
+    const val = text.slice(s, e);
+    if (PH.test(val) || vault.ignored.has(val)) return;
+    cands.push({ s, e, type, pri, val });
+  };
+  for (const [fn, ...cats] of DETECTORS) if (cats.some(c => enabled[c])) fn(text, add);
+
+  // Wartości znane z mapy: ręczne (pri 0, dowolna długość) i wcześniej wykryte (pri 9, z granicami tokena)
+  for (const [tok, en] of vault.byToken) {
+    const v = en.value, cat = catOf(en.type);
+    if (en.manual) { /* zawsze */ }
+    else if (en.type === 'PORT' || v.length < (cat === 'SECRET' || cat === 'ID' || cat === 'USER' || cat === 'PII' ? 6 : 4) || !enabled[cat]) continue;
+    if (vault.ignored.has(v)) continue;
+    const pri = en.manual ? 0 : 9;
+    const checkStart = !en.manual && isWord(v[0]);
+    const checkEnd = !en.manual && isWord(v[v.length - 1]);
+    let i = -1;
+    while ((i = text.indexOf(v, i + 1)) !== -1) {
+      if (checkStart && isWord(text.charAt(i - 1))) continue;
+      if (checkEnd && isWord(text.charAt(i + v.length))) continue;
+      cands.push({ s: i, e: i + v.length, type: en.type, pri, val: v });
+    }
+  }
+  return cands;
+}
+
+/* Zwraca {out, hits, count}. Modyfikuje vault (nowe tokeny). */
+function maskText(text, enabled, vault) {
+  const cands = detectAll(text, enabled, vault);
+  cands.sort((a, b) => a.pri - b.pri || (b.e - b.s) - (a.e - a.s) || a.s - b.s);
+  const occ = new Uint8Array(text.length);
+  const acc = [];
+  for (const c of cands) {
+    let free = true;
+    for (let i = c.s; i < c.e; i++) if (occ[i]) { free = false; break; }
+    if (!free) continue;
+    occ.fill(1, c.s, c.e);
+    acc.push(c);
+  }
+  acc.sort((a, b) => a.s - b.s);
+  const used = textTokens(text);
+  const hits = new Map(); const parts = []; let pos = 0;
+  for (const c of acc) {
+    parts.push(text.slice(pos, c.s));
+    let tok = vault.byValue.get(c.val);
+    if (!tok) tok = registerToken(vault, c.type, c.val, false, used);
+    parts.push(tok);
+    hits.set(tok, (hits.get(tok) || 0) + 1);
+    pos = c.e;
+  }
+  parts.push(text.slice(pos));
+  return { out: parts.join(''), hits, count: acc.length };
+}
+
+/* Deanonimizacja: jedno przejście, 1:1, bez ponownego skanowania wstawionych wartości. */
+const TOKRE = /(?:<|&lt;)([A-Za-z][A-Za-z0-9_]{0,30}_\d{1,6})(?:>|&gt;)/g;
+function restoreText(text, vault) {
+  let restored = 0; const unknown = new Set(); const used = new Set();
+  const out = text.replace(TOKRE, (m, name) => {
+    const tok = '<' + name.toUpperCase() + '>';
+    const en = vault.byToken.get(tok);
+    if (!en) { unknown.add(m); return m; }
+    restored++; used.add(tok);
+    return en.value;
+  });
+  return { out, restored, used, unknown };
+}
+
+function normalizeLabel(raw) {
+  let t = String(raw || '').trim()
+    .replace(/[łŁ]/g, 'L')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase().replace(/[<>]/g, '').replace(/[^A-Z0-9_]/g, '_');
+  t = t.replace(/_\d+$/, '').replace(/^[^A-Z]+/, '').replace(/_+$/, '').slice(0, 24);
+  return /^[A-Z][A-Z0-9_]*$/.test(t) ? t : '';
+}
+
+// ==== ENGINE END ====
+
+/* =====================================================================
+ *  WARSTWA UI
+ * ===================================================================== */
+const $ = id => document.getElementById(id);
+let vault = newVault();      // jedyne miejsce, gdzie żyją sekrety (RAM)
+let toastTimer = 0;
+
+function toast(msg, kind) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'show' + (kind === 'warn' ? ' warn' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 2600);
+}
+
+function readToggles() {
+  const o = {};
+  for (const t of TOGGLES) o[t] = $('tg_' + t).checked;
+  return o;
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+/* ---------- Tabela mapowań ---------- */
+function renderTable() {
+  const tb = $('mapBody');
+  tb.textContent = '';
+  $('mapCount').textContent = String(vault.byToken.size);
+  if (!vault.byToken.size) {
+    const tr = el('tr'); const td = el('td', 'empty', 'Brak mapowań — wklej tekst i kliknij „Skanuj i zamaskuj”.');
+    td.colSpan = 6; tr.appendChild(td); tb.appendChild(tr);
+    return;
+  }
+  for (const [tok, en] of vault.byToken) {
+    const tr = el('tr');
+    const tdT = el('td'); tdT.appendChild(el('span', 'tag', en.type + (en.manual ? ' ✎' : '')));
+    tr.appendChild(tdT);
+    tr.appendChild(el('td', 'mono', tok));
+    tr.appendChild(el('td', '', String(en.value.length) + ' zn.'));
+    tr.appendChild(el('td', '', String(vault.hits.get(tok) || 0)));
+    const shown = vault.revealed.has(tok);
+    tr.appendChild(el('td', 'val', shown ? en.value : '•'.repeat(Math.min(8, Math.max(3, en.value.length)))));
+    const tdA = el('td', 'act');
+    const bShow = el('button', 'btn sm', shown ? 'Ukryj' : 'Pokaż');
+    bShow.addEventListener('click', () => {
+      if (vault.revealed.has(tok)) vault.revealed.delete(tok); else vault.revealed.add(tok);
+      renderTable();
+    });
+    const bDel = el('button', 'btn sm', 'Usuń');
+    bDel.style.marginLeft = '6px';
+    bDel.addEventListener('click', () => removeRule(tok));
+    tdA.appendChild(bShow); tdA.appendChild(bDel);
+    tr.appendChild(tdA);
+    tb.appendChild(tr);
+  }
+}
+
+function removeRule(tok) {
+  const en = vault.byToken.get(tok);
+  if (!en) return;
+  vault.byToken.delete(tok);
+  vault.byValue.delete(en.value);
+  vault.revealed.delete(tok);
+  vault.ignored.add(en.value);       // nie wykrywaj ponownie tej wartości automatycznie
+  en.value = '';
+  render();
+  toast('Usunięto regułę ' + tok + ' — wartość pozostanie widoczna w tekście wynikowym.', 'warn');
+}
+
+/* ---------- Maskowanie ---------- */
+function render() {
+  const text = $('src').value;
+  const tg = readToggles();
+  const r = maskText(text, tg, vault);
+  vault.hits = r.hits;
+  $('out1').value = r.out;
+  const off = TOGGLES.filter(k => !tg[k]);
+  const s1 = $('stats1');
+  s1.className = off.length ? 'muted warn' : 'muted';
+  s1.textContent = text
+    ? 'Zamaskowano ' + r.count + ' wystąpień · unikalnych tokenów w tym tekście: ' + r.hits.size + ' · reguł w słowniku: ' + vault.byToken.size +
+      (off.length ? ' · ⚠ wyłączono: ' + off.join(', ') : '')
+    : '';
+  renderTable();
+}
+
+function updateSelInfo() {
+  const ta = $('src');
+  const n = Math.abs(ta.selectionEnd - ta.selectionStart);
+  $('selInfo').textContent = 'Zaznaczenie: ' + n + ' zn.';
+}
+
+function maskSelection() {
+  const ta = $('src');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  if (s === e) { toast('Najpierw zaznacz fragment tekstu w polu danych źródłowych.', 'warn'); return; }
+  const val = ta.value.slice(s, e).trim();
+  if (!val) { toast('Zaznaczenie zawiera tylko białe znaki.', 'warn'); return; }
+  const type = normalizeLabel($('lbl').value);
+  if (!type) { toast('Nieprawidłowa etykieta — użyj liter A–Z, cyfr i _ (np. USER).', 'warn'); return; }
+  const existing = vault.byValue.get(val);
+  if (existing) {
+    const en = vault.byToken.get(existing);
+    if (en.manual) { toast('Ten fragment jest już zamaskowany jako ' + existing + '.', 'warn'); return; }
+    // wcześniej wykryty automatycznie → przejmij jako regułę ręczną (token bez zmian)
+    en.manual = true;
+  } else {
+    vault.ignored.delete(val);
+    registerToken(vault, type, val, true, textTokens(ta.value));
+  }
+  render();
+  toast('Dodano token ' + vault.byValue.get(val));
+}
+
+/* ---------- Przywracanie ---------- */
+function doRestore() {
+  const text = $('src2').value;
+  const s2 = $('stats2');
+  if (!text) { $('out2').value = ''; s2.className = 'muted'; s2.textContent = ''; return; }
+  const r = restoreText(text, vault);
+  $('out2').value = r.out;
+  let msg = 'Przywrócono ' + r.restored + ' wystąpień (' + r.used.size + ' unikalnych tokenów).';
+  let cls = r.restored ? 'okc' : 'warn';
+  if (!vault.byToken.size) { msg += ' Słownik jest pusty — najpierw wykonaj Krok 1.'; cls = 'warn'; }
+  if (r.unknown.size) {
+    msg += ' Nieznane tokeny (bez zmian): ' + Array.from(r.unknown).slice(0, 10).join(', ') + (r.unknown.size > 10 ? ' …' : '') + '.';
+    cls = 'warn';
+  }
+  s2.className = 'muted ' + cls;
+  s2.textContent = msg;
+}
+
+/* ---------- Schowek ---------- */
+async function copyFrom(id) {
+  const ta = $(id), text = ta.value;
+  if (!text) { toast('Brak tekstu do skopiowania.', 'warn'); return; }
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch (e) { /* fallback poniżej */ }
+  if (!ok) {
+    try { ta.focus(); ta.select(); ok = document.execCommand('copy'); ta.setSelectionRange(0, 0); } catch (e) { ok = false; }
+  }
+  toast(ok ? 'Skopiowano do schowka.' : 'Nie udało się skopiować — zaznacz tekst i użyj Ctrl+C.', ok ? '' : 'warn');
+}
+
+/* ---------- PANIC ---------- */
+function wipeTextarea(ta) {
+  const n = ta.value.length;
+  if (n) { try { ta.value = '\u2588'.repeat(Math.min(n, 4000000)); } catch (e) { /* ignore */ } }
+  ta.value = '';
+  try {
+    const p = ta.parentNode, ns = ta.nextSibling;
+    if (p) { p.removeChild(ta); p.insertBefore(ta, ns); }      // czyści natywny bufor historii Cofnij (Ctrl+Z)
+  } catch (e) { /* ignore */ }
+}
+function clearStep2() {
+  for (const id of ['src2', 'out2']) {
+    const ta = $(id);
+    try { ta.setSelectionRange(0, 0); } catch (e) { /* ignore */ }
+    wipeTextarea(ta);
+  }
+  $('stats2').textContent = '';
+  toast('Wyczyszczono pola Kroku 2.');
+}
+function pressureGC() {
+  try { if (typeof window.gc === 'function') window.gc(); } catch (e) { /* tylko z flagą --expose-gc */ }
+  try { let a = []; for (let i = 0; i < 4; i++) a.push(new Uint8Array(8 * 1024 * 1024).fill(i + 1)); a = null; } catch (e) { /* brak pamięci — pomiń */ }
+}
+function panic(silent) {
+  try { window.name = ''; } catch (e) { /* ignore */ }
+  try { const sel = window.getSelection(); if (sel) sel.removeAllRanges(); } catch (e) { /* ignore */ }
+  for (const id of ['src', 'out1', 'src2', 'out2']) {
+    const ta = $(id);
+    try { ta.setSelectionRange(0, 0); } catch (e) { /* ignore */ }
+    wipeTextarea(ta);
+  }
+  for (const en of vault.byToken.values()) en.value = '';     // nadpisz referencje do sekretów
+  vault.byToken.clear(); vault.byValue.clear(); vault.counters.clear();
+  vault.ignored.clear(); vault.revealed.clear(); vault.hits.clear();
+  vault = newVault();                                         // porzuć stary obiekt
+  $('lbl').value = 'USER';
+  $('lblPreset').value = 'USER';
+  $('stats1').textContent = ''; $('stats2').textContent = '';
+  $('selInfo').textContent = 'Zaznaczenie: 0 zn.';
+  renderTable();
+  if (!silent) {
+    try {
+      const tmp = document.createElement('textarea');
+      tmp.value = ' ';
+      tmp.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+      document.body.appendChild(tmp);
+      tmp.focus(); tmp.select();
+      try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+      document.body.removeChild(tmp);
+    } catch (e) { /* ignore */ }
+    try { if (navigator.clipboard) navigator.clipboard.writeText('').catch(() => {}); } catch (e) { /* ignore */ }
+  }
+  pressureGC();
+  if (!silent) toast('Wyczyszczono: pola, historię edycji, słownik w RAM i schowek.');
+}
+
+/* ---------- Wskaźnik bezpieczeństwa: autotest CSP + blokada API sieciowych i dyskowych ---------- */
+function lockNetworkAPIs() {
+  const deny = () => { throw new Error('Zablokowane przez politykę offline'); };
+  for (const k of ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'Worker', 'SharedWorker', 'open']) {
+    try { Object.defineProperty(window, k, { value: deny, configurable: false, writable: false }); } catch (e) { /* ignore */ }
+  }
+  for (const s of ['localStorage', 'sessionStorage', 'indexedDB', 'caches', 'cookieStore']) {
+    try { Object.defineProperty(window, s, { get: deny, configurable: false }); } catch (e) { /* ignore */ }
+  }
+  try { Object.defineProperty(document, 'cookie', { get: () => '', set: deny, configurable: false }); } catch (e) { /* ignore */ }
+  try { if (navigator.sendBeacon) Object.defineProperty(navigator, 'sendBeacon', { value: deny, configurable: false, writable: false }); } catch (e) { /* ignore */ }
+}
+
+function securitySelfTest() {
+  const badge = $('secBadge'), det = $('secDetail');
+  const meta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+  let violations = 0;
+  document.addEventListener('securitypolicyviolation', ev => {
+    if (ev.blockedURI === 'data' || ev.blockedURI.startsWith('data:')) return; // nasz własny test poniżej
+    violations++;
+    det.textContent = 'zablokowano prób: ' + violations;
+  });
+  const bad = why => { badge.classList.add('bad'); det.textContent = why; };
+  if (!meta || !/default-src\s+'none'/i.test(meta.content)) { bad('BRAK CSP!'); lockNetworkAPIs(); return; }
+  if (typeof fetch !== 'function') { det.textContent = 'autotest CSP: OK'; lockNetworkAPIs(); return; }
+  // data: jest lokalne (zero ruchu sieciowego). Przy aktywnym CSP connect-src='none' musi je odrzucić.
+  fetch('data:text/plain,csp-probe').then(
+    () => bad('UWAGA: CSP nieaktywne!'),
+    () => { det.textContent = 'autotest CSP: OK'; }
+  );
+  lockNetworkAPIs();
+}
+
+/* ---------- Podpięcie zdarzeń ---------- */
+$('scanBtn').addEventListener('click', render);
+$('clear1Btn').addEventListener('click', () => panic(false));
+$('manualBtn').addEventListener('click', maskSelection);
+$('restoreBtn').addEventListener('click', doRestore);
+$('clear2Btn').addEventListener('click', clearStep2);
+$('copy1').addEventListener('click', () => copyFrom('out1'));
+$('copy2').addEventListener('click', () => copyFrom('out2'));
+$('panicBtn').addEventListener('click', () => panic(false));
+
+const src = $('src');
+['select', 'mouseup', 'keyup', 'focus', 'blur'].forEach(ev => src.addEventListener(ev, updateSelInfo));
+src.addEventListener('paste', () => setTimeout(render, 30));
+src.addEventListener('input', () => {
+  if ($('out1').value || $('stats1').textContent) {
+    const s1 = $('stats1'); s1.className = 'muted warn';
+    s1.textContent = '⚠ Tekst zmieniony — kliknij „Skanuj i zamaskuj”, aby odświeżyć wynik.';
+  }
+});
+src.addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); render(); } });
+$('src2').addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); doRestore(); } });
+$('src2').addEventListener('input', () => {
+  if ($('out2').value || $('stats2').textContent) {
+    const s2 = $('stats2'); s2.className = 'muted warn';
+    s2.textContent = '⚠ Tekst zmieniony — kliknij „Przywróć oryginalne dane”, aby odświeżyć wynik.';
+  }
+});
+$('src2').addEventListener('paste', () => setTimeout(doRestore, 30));
+for (const t of TOGGLES) $('tg_' + t).addEventListener('change', () => { if ($('src').value) render(); });
+$('lblPreset').addEventListener('change', () => {
+  if ($('lblPreset').value) $('lbl').value = $('lblPreset').value;
+});
+$('lbl').addEventListener('input', () => {
+  const norm = normalizeLabel($('lbl').value);
+  const preset = $('lblPreset');
+  const match = Array.from(preset.options).some(o => o.value === norm);
+  if (match) preset.value = norm;
+  else preset.selectedIndex = -1;
+});
+$('lbl').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); maskSelection(); } });
+document.addEventListener('keydown', e => {
+  if (e.altKey && e.shiftKey && (e.key === 'X' || e.key === 'x')) { e.preventDefault(); panic(false); }
+});
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (!f) return;
+  if (f.size > 10 * 1024 * 1024) { toast('Plik jest zbyt duży (>10 MB) — wklej tekst ręcznie.', 'warn'); return; }
+  const toRestore = e.target === $('src2') || $('colRestore').contains(e.target);
+  const r = new FileReader();
+  r.onload = () => {
+    const txt = String(r.result || '');
+    if (toRestore) { $('src2').value = txt; doRestore(); }
+    else { $('src').value = txt; render(); }
+    toast('Wczytano plik lokalnie do pamięci RAM (' + f.name + ').');
+  };
+  r.readAsText(f);
+});
+window.addEventListener('pagehide', () => panic(true));
+
+renderTable();
+securitySelfTest();
+
+})();
+</script>
+</body>
+</html>
