@@ -68,6 +68,46 @@
   .manual{display:grid;grid-template-columns:1fr 165px;gap:10px;align-items:end;margin-top:14px;
           padding:12px;border:1px dashed var(--line);border-radius:10px;background:#0e1830}
   .manual .full{grid-column:1/-1}
+  .findhead{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .find-toggle{display:inline-flex;align-items:center;gap:6px;background:#13203d;border-color:#2b3a55;color:var(--blue2)}
+  .find-toggle[aria-expanded="true"]{background:#1e3a8a;border-color:var(--blue);color:#fff}
+  .findbar{grid-column:1/-1;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#0b1224;margin-bottom:2px}
+  .findbar[hidden]{display:none !important}
+  .findrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .findrow input[type=text]{flex:1;min-width:180px}
+  .findopts{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--muted)}
+  .findopts label{display:inline-flex;gap:5px;align-items:center;cursor:pointer;user-select:none}
+  .findopts input{accent-color:var(--blue)}
+  .fcount{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:2px 9px;font-size:12px;white-space:nowrap}
+  .fcount.ok{border-color:#14532d;background:#052e16;color:#86efac}
+  .fcount.warn{border-color:#78350f;background:#451a03;color:#fcd34d}
+  .manual3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:end;grid-column:1/-1}
+  .h3row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:18px 0 8px}
+  .h3row h3{margin:0}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(7,12,24,.82);z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
+  .modal-backdrop[hidden]{display:none !important}
+  .modal-card{width:min(1220px,96vw);height:min(90vh,920px);background:var(--panel);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+  .modal-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#0b1224;border-bottom:1px solid var(--line)}
+  .modal-top h2{margin:0;font-size:16px;display:flex;align-items:center;gap:10px}
+  .modal-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;background:#0e1830;border-bottom:1px solid var(--line)}
+  .modal-bar input[type=text],.modal-bar select{width:auto;padding:6px 10px;font-size:12px}
+  #modalPhrase{flex:1 1 220px;min-width:180px}
+  #modalPreset{flex:0 1 175px}
+  #modalLbl{width:130px}
+  #modalTargetTok{flex:0 1 190px}
+  .modal-chk{display:inline-flex;gap:5px;align-items:center;font-size:12px;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}
+  .modal-chk input{accent-color:var(--blue)}
+  .modal-status{padding:6px 16px;background:#0b1224;border-bottom:1px solid #1b2943;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:12px}
+  .modal-view{flex:1;overflow:auto;padding:12px 0;background:#0a1020;font-family:var(--mono);font-size:13px;line-height:1.55}
+  .mline{display:flex;padding:1px 16px 1px 0;border-left:3px solid transparent}
+  .mline:hover{background:#111c33}
+  .mline.risk-line{background:rgba(245,158,11,.09);border-left-color:var(--amber)}
+  .mline .ln{width:48px;flex-shrink:0;text-align:right;padding-right:12px;color:#475569;user-select:none;font-size:11px}
+  .mline.risk-line .ln{color:var(--amber);font-weight:700}
+  .mline .ltxt{white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;flex:1;min-width:0}
+  .tok-pill{display:inline-block;padding:0 5px;border-radius:4px;background:#1e3a8a;border:1px solid #3b82f6;color:#bfdbfe;font-weight:600}
+  .modal-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 16px;background:#0b1224;border-top:1px solid var(--line)}
+  @media (max-width:720px){.manual3{grid-template-columns:1fr}}
   @media (max-width:520px){.manual{grid-template-columns:1fr}}
 
   .tablewrap{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#0b1224}
@@ -133,27 +173,56 @@
     </div>
 
     <div class="manual">
-      <div>
-        <label class="l" for="lblPreset">Predefined label (preset)</label>
-        <select id="lblPreset" autocomplete="off">
-          <option value="USER">User / Login (USER)</option>
-          <option value="FIRST_NAME">First name (FIRST_NAME)</option>
-          <option value="LAST_NAME">Last name (LAST_NAME)</option>
-          <option value="NAME">Name / Company (NAME)</option>
-          <option value="ADDRESS">Address (ADDRESS)</option>
-          <option value="NATIONAL_ID">National ID / SSN (NATIONAL_ID)</option>
-          <option value="BIRTH_YEAR">Birth year (BIRTH_YEAR)</option>
-          <option value="PHONE">Phone (PHONE)</option>
-          <option value="ID">Identifier (ID)</option>
-          <option value="PORT">Port (PORT)</option>
-        </select>
+      <div class="findhead">
+        <span class="muted">Manual masking &amp; token assignment</span>
+        <button class="btn sm find-toggle" id="findToggleBtn" type="button" aria-expanded="false" aria-controls="findBar">🔍 Search phrase in text ▾</button>
       </div>
-      <div>
-        <label class="l" for="lbl">Token label (custom)</label>
-        <input type="text" id="lbl" value="USER" maxlength="24" spellcheck="false" autocomplete="off" placeholder="e.g. USER, PORT">
+
+      <div class="findbar" id="findBar" hidden>
+        <label class="l" for="findInput">Search phrase in source text (to highlight or assign all occurrences to a token)</label>
+        <div class="findrow">
+          <input type="text" id="findInput" spellcheck="false" autocomplete="off" placeholder="Enter phrase to find (e.g. company name, person, host, project)…">
+          <button class="btn sm" id="findPrev" type="button" title="Previous match (Shift+Enter)">◀</button>
+          <button class="btn sm" id="findNext" type="button" title="Next match (Enter)">▶</button>
+          <span class="fcount" id="findCount">0 matches</span>
+        </div>
+        <div class="findopts">
+          <label><input type="checkbox" id="findIgnoreCase" checked> Case-insensitive (a=A)</label>
+          <label><input type="checkbox" id="findWholeWord"> Whole words only</label>
+          <button class="btn primary sm" id="maskFoundBtn" type="button" style="margin-left:auto">Mask all found as selected token</button>
+        </div>
       </div>
-      <button class="btn full" id="manualBtn">Mask selection as token</button>
-      <div class="muted full">Highlight any text in the source box above, pick a preset or enter a custom label (e.g. <code>USER</code> → <code>&lt;USER_01&gt;</code>), and click the button. All occurrences of that string are masked.</div>
+
+      <div class="manual3">
+        <div>
+          <label class="l" for="lblPreset">Predefined label (preset)</label>
+          <select id="lblPreset" autocomplete="off">
+            <option value="USER">User / Login (USER)</option>
+            <option value="FIRST_NAME">First name (FIRST_NAME)</option>
+            <option value="LAST_NAME">Last name (LAST_NAME)</option>
+            <option value="NAME">Name / Company (NAME)</option>
+            <option value="ADDRESS">Address (ADDRESS)</option>
+            <option value="NATIONAL_ID">National ID / SSN (NATIONAL_ID)</option>
+            <option value="BIRTH_YEAR">Birth year (BIRTH_YEAR)</option>
+            <option value="PHONE">Phone (PHONE)</option>
+            <option value="ID">Identifier (ID)</option>
+            <option value="PORT">Port (PORT)</option>
+          </select>
+        </div>
+        <div>
+          <label class="l" for="lbl">Label or token (custom)</label>
+          <input type="text" id="lbl" value="USER" maxlength="28" spellcheck="false" autocomplete="off" placeholder="e.g. USER or &lt;USER_01&gt;">
+        </div>
+        <div>
+          <label class="l" for="targetTok">Target specific token</label>
+          <select id="targetTok" autocomplete="off">
+            <option value="">➕ New token from label</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn full" id="manualBtn" type="button">Mask selection as token</button>
+      <div class="muted full">Highlight text in the source box or expand the phrase search, pick a label (e.g. <code>USER</code> → <code>&lt;USER_01&gt;</code>) or select an existing token from the list (or type e.g. <code>&lt;USER_01&gt;</code> manually) and click the button.</div>
     </div>
 
     <h3>Active mappings <span class="count" id="mapCount">0</span></h3>
@@ -164,9 +233,13 @@
       </table>
     </div>
 
-    <h3>Anonymized text — safe prompt</h3>
+    <div class="h3row">
+      <h3>Anonymized text — safe prompt</h3>
+      <button class="btn sm" id="openModalBtn" type="button" title="Open full-window preview to inspect the anonymized text and catch missed secrets">🔍 Review in window (modal)</button>
+    </div>
     <textarea id="out1" class="out" readonly spellcheck="false" autocomplete="off" placeholder="Anonymized text will appear here…"></textarea>
     <div class="muted" id="stats1" aria-live="polite"></div>
+    <div class="muted warn" id="risk1" aria-live="polite"></div>
     <button class="btn primary big" id="copy1">Copy safe prompt</button>
   </section>
 
@@ -195,9 +268,56 @@
   nothing is written to disk (no localStorage / sessionStorage / IndexedDB / cookies) — the mapping vault lives solely in this tab's RAM
   and vanishes when the tab closes or when <b>PANIC</b> (<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>) is triggered.
   Detection is heuristic — <b>always review the anonymized output before sending</b> and add manual masks where needed.
-  JavaScript cannot physically zero memory pages: PANIC clears all references, overwrites fields, and pressures GC (best-effort).</div>
+  The “residual risk” notice flags potential traces left untouched by the scan; absence of a warning is not a guarantee.
+  Browser extensions (Grammarly, LanguageTool, password managers) and built-in browser AI sidebars (Copilot, Gemini) can read field contents despite CSP — open this page in a clean profile without extensions.
+  Secret length in the table remains hidden until you click “Show”.
+  JavaScript cannot physically zero memory pages: PANIC clears all references, overwrites fields, and pressures GC (best-effort). The OS clipboard manager may keep history outside the browser's reach.</div>
   <div class="foot-author"><span>Anonimizer · Air-gapped / Zero Network Footprint</span><span>Author: <b>hatterp</b></span></div>
 </footer>
+
+<div class="modal-backdrop" id="previewModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+  <div class="modal-card">
+    <div class="modal-top">
+      <h2 id="modalTitle">Safe prompt preview — review &amp; extra masking</h2>
+      <button class="btn sm" id="closeModalBtn" type="button" title="Close (Esc)">✕ Close</button>
+    </div>
+    <div class="modal-bar">
+      <input type="text" id="modalPhrase" spellcheck="false" autocomplete="off" placeholder="Highlight text below or enter a missed phrase…">
+      <span class="fcount" id="modalFindCount">0 matches</span>
+      <label class="modal-chk"><input type="checkbox" id="modalIgnoreCase" checked> a=A</label>
+      <label class="modal-chk"><input type="checkbox" id="modalWholeWord"> whole words</label>
+      <select id="modalPreset" autocomplete="off" title="Predefined label">
+        <option value="USER">User / Login (USER)</option>
+        <option value="FIRST_NAME">First name (FIRST_NAME)</option>
+        <option value="LAST_NAME">Last name (LAST_NAME)</option>
+        <option value="NAME">Name / Company (NAME)</option>
+        <option value="ADDRESS">Address (ADDRESS)</option>
+        <option value="NATIONAL_ID">National ID / SSN (NATIONAL_ID)</option>
+        <option value="BIRTH_YEAR">Birth year (BIRTH_YEAR)</option>
+        <option value="PHONE">Phone (PHONE)</option>
+        <option value="ID">Identifier (ID)</option>
+        <option value="PORT">Port (PORT)</option>
+      </select>
+      <input type="text" id="modalLbl" value="USER" maxlength="28" spellcheck="false" autocomplete="off" placeholder="e.g. USER or &lt;USER_01&gt;">
+      <select id="modalTargetTok" autocomplete="off" title="Target specific token">
+        <option value="">➕ New token from label</option>
+      </select>
+      <button class="btn primary sm" id="modalMaskBtn" type="button">Mask in text</button>
+    </div>
+    <div class="modal-status">
+      <span class="muted" id="modalStats"></span>
+      <span class="muted warn" id="modalRisk"></span>
+    </div>
+    <div class="modal-view" id="modalView" tabindex="0"></div>
+    <div class="modal-foot">
+      <span class="muted">Tip: Highlight any unmasked text fragment in the preview above (it fills the top input automatically), pick a label/token and click “Mask in text”.</span>
+      <div class="row" style="margin-top:0">
+        <button class="btn primary" id="modalCopyBtn" type="button">Copy safe prompt</button>
+        <button class="btn" id="modalCloseBtn2" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div id="toast" role="status"></div>
 
@@ -265,8 +385,8 @@ function detectKnownTokens(text, add) {
 }
 
 /* ---------- 3. Pary klucz-wartość (=, :, :=, =>) ---------- */
-const KW = /password|passwd|passphrase|pass(?![a-z])|pwd(?![a-z])|psk(?![a-z])|secret|token|(?:api|private|access|signing|encryption|master|session|ssh|pre[_-]?shared|account|shared[_-]?access)[_-]?key|shared[_-]?access[_-]?signature|auth(?:orization)?(?![a-z])|credential|\b(?:cvc|cvv2?)\b/gi;
-const KEYCH = /[A-Za-z0-9_.\-]/;
+const KW = /password|passwd|passphrase|hasło|haslo|tajne|tajny|pass(?![a-z])|pwd(?![a-z])|psk(?![a-z])|secret|sekrety?(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż])|sekretny|sekretne|token|klucze?(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż])|(?:api|private|access|signing|encryption|master|session|ssh|pre[_-]?shared|account|shared[_-]?access)[_-]?key|shared[_-]?access[_-]?signature|auth(?:orization)?(?![a-z])|credential|\b(?:cvc|cvv2?)\b/gi;
+const KEYCH = /[A-Za-z0-9_.\-ĄĆĘŁŃÓŚŹŻąćęłńóśźż]/;
 const SEP = /[ \t]*(?::=|=>|=|:)[ \t]*/y;
 const SEP_CLI = /[ \t]+/y;
 const VAL = /(?:(?:Bearer|Basic|Digest|Token|Api-?Key|Bot)[ \t]+)?(?:"((?:[^"\\\r\n]|\\.)*)"|'((?:[^'\\\r\n]|\\.)*)'|`((?:[^`\\\r\n]|\\.)*)`|([^\s"'`,;&<>()\[\]{}]+))/y;
@@ -275,7 +395,12 @@ function detectKV(text, add) {
   KW.lastIndex = 0; let m, keyEnd = 0;
   while ((m = KW.exec(text))) {
     if (m.index < keyEnd) continue;
-    if (m[0].toLowerCase() === 'pass' && m.index > 0 && /[A-Za-z]/.test(text[m.index - 1]) && !(/[a-z]/.test(text[m.index - 1]) && m[0][0] === 'P')) continue; // odrzuca bypass/BYPASS/compass, zostawia dbPass/db_pass
+    if (m[0].toLowerCase() === 'pass' && m.index > 0 && /[A-Za-z]/.test(text[m.index - 1])) {
+      let ps = m.index;
+      while (ps > 0 && /[A-Za-z]/.test(text[ps - 1])) ps--;
+      const pre = text.slice(ps, m.index).toLowerCase();
+      if (/^(?:by|com|sur|over|under)$/.test(pre)) continue; // bypass, compass, surpass — nie dbpass / mypass
+    }
     let ks = m.index;                                   // początek nazwy klucza (limit 64 zn.)
     while (ks > 0 && m.index - ks < 64 && KEYCH.test(text[ks - 1])) ks--;
     if (ks >= 3 && text.slice(ks - 3, ks) === '://') continue; // userinfo w URL obsługuje detectUrlCreds
@@ -286,8 +411,8 @@ function detectKV(text, add) {
     if (q === '"' || q === "'" || q === '`') k++;       // zamykający cudzysłów klucza (JSON/słownik)
     if (text[k] === ']' && (q === '"' || q === "'" || q === '`' || (ks > 0 && text[ks - 1] === '['))) k++; // cfg["password"] = …
     SEP.lastIndex = k;
-    let sm = SEP.exec(text);
-    if (!sm && text.startsWith('--', ks)) { SEP_CLI.lastIndex = k; sm = SEP_CLI.exec(text); }  // --password hunter2
+    let sm = SEP.exec(text), usedCli = false;
+    if (!sm && text.startsWith('--', ks)) { SEP_CLI.lastIndex = k; sm = SEP_CLI.exec(text); usedCli = true; }  // --password hunter2
     if (!sm) continue;
     const vpos = k + sm[0].length;
     VAL.lastIndex = vpos;
@@ -297,8 +422,30 @@ function detectKV(text, add) {
     const v = vm[1] !== undefined ? vm[1] : vm[2] !== undefined ? vm[2] : vm[3] !== undefined ? vm[3] : vm[4];
     if (!v || !/[A-Za-z0-9]/.test(v) || SKIPVAL.test(v)) continue;
     if (v[0] === '$' || v[0] === '%' || v.startsWith('{{')) continue;     // odwołania do zmiennych/szablonów
-    const e = vpos + vm[0].length - (quoted ? 1 : 0);
-    add(e - v.length, e, 'SECRET', 3);
+    let e = vpos + vm[0].length - (quoted ? 1 : 0);
+    const start = e - v.length;
+    if (!quoted && !usedCli && text[e] !== ',' && text[e] !== ';') {
+      // hasło niecytowane: "correct horse battery staple", ale nie połykaj kolejnego key=, flagi CLI ani nawiasu/separatora
+      let j = e, words = 1;
+      while (j < text.length && words < 8) {
+        if (text[j] === '\n' || text[j] === '\r' || text[j] === '#' || text[j] === ';') break;
+        if (text[j] === '/' && text[j + 1] === '/') break;
+        if (text[j] !== ' ' && text[j] !== '\t') break;
+        let ws = j;
+        while (ws < text.length && (text[ws] === ' ' || text[ws] === '\t')) ws++;
+        if (ws >= text.length || text[ws] === '\n' || text[ws] === '\r' || text[ws] === '#' || text[ws] === ';') break;
+        let w = ws;
+        while (w < text.length && !/[\s;#]/.test(text[w])) w++;
+        const word = text.slice(ws, w);
+        if (!word || word[0] === '-' || /[=:|()\[\]{}"'<>\\,]/.test(word) || word.startsWith('//')) break;
+        if (/^(?:and|or|the|again|then|with|from|this|that|oraz|ale|lub|jest|not|nie|are|where|select|into|limit|user|login|host|port)$/i.test(word)) break;
+        j = w;
+        words++;
+      }
+      while (j > e && /[\s,|]/.test(text[j - 1])) j--;
+      e = j;
+    }
+    add(start, e, 'SECRET', 3);
   }
 }
 // Konfiguracje sieciowe i serwerowe (Cisco, BGP, OSPF, SNMP, RADIUS/TACACS, WPA, Redis, SQL, curl -u)
@@ -357,8 +504,12 @@ const MAILDOM = /[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)+/y;
 function detectEmail(text, add) {
   let i = -1;
   while ((i = text.indexOf('@', i + 1)) !== -1) {
-    let s = i; while (s > 0 && i - s < 64 && /[A-Za-z0-9._%+\-]/.test(text[s - 1])) s--;
+    let s = i; while (s > 0 && i - s < 64 && /[A-Za-z0-9._%+\-ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/.test(text[s - 1])) s--;
     if (s === i) continue;
+    if (/^localhost(?![A-Za-z0-9])/i.test(text.slice(i + 1, i + 12))) {
+      add(s, i + 1 + 'localhost'.length, 'EMAIL', 4);
+      continue;
+    }
     MAILDOM.lastIndex = i + 1;
     const dm = MAILDOM.exec(text);
     if (!dm || /\.\d+$/.test(dm[0])) continue;          // odrzuca np. npm pkg@1.2.3
@@ -458,36 +609,38 @@ const URL_HOST = /\b(?:https?|wss?|ftp|sftp|ldaps?|postgres(?:ql)?|mysql|redis|r
 const CFG_HOST = /^[ \t]*(?:hostname|HostName|server_name)[ \t]+([A-Za-z0-9][A-Za-z0-9._\-]{1,62})(?=[ \t;]|$)/gm;
 const KV_HOST = /\b(?:hostname|host[_-]?name|server[_-]?name)(?:"|'|`)?[ \t]*(?::=|=>|=|:)[ \t]*(?:"([A-Za-z0-9][A-Za-z0-9._\-]{1,62})"|'([A-Za-z0-9][A-Za-z0-9._\-]{1,62})'|([A-Za-z0-9][A-Za-z0-9._\-]{1,62}))/gi;
 function detectHost(text, add) {
-  HOST_RUN.lastIndex = 0; let m;
+  let m, host, end;
+  HOST_RUN.lastIndex = 0;
   while ((m = HOST_RUN.exec(text))) {
-    const str = m[0], s = m.index, e = s + str.length;
+    const str = m[0], s = m.index;
+    end = s + str.length;
     const dot = str.lastIndexOf('.');
     if (dot === -1 || !TLD_SET.has(str.slice(dot + 1).toLowerCase())) continue;
-    if (text.charAt(e) === '(' || CONFIG_HOST_SKIP.test(str)) continue;         // wywołanie funkcji / klucz konfig. (memcache.local)
-    if (/^['"`]?[ \t]*=>[ \t]*['"`]?\\/.test(text.slice(e, e + 24))) continue;   // klucz PHP przed nazwą klasy (\OC\...)
-    add(s, e, 'HOST', 7);
+    if (text.charAt(end) === '(' || CONFIG_HOST_SKIP.test(str)) continue;         // wywołanie funkcji / klucz konfig. (memcache.local)
+    if (/^['"`]?[ \t]*=>[ \t]*['"`]?\\/.test(text.slice(end, end + 24))) continue;   // klucz PHP przed nazwą klasy (\OC\...)
+    add(s, end, 'HOST', 7);
   }
   URL_HOST.lastIndex = 0;
   while ((m = URL_HOST.exec(text))) {
-    const host = m[1];
+    host = m[1];
     if (!host || host.toLowerCase() === 'localhost' || validV4(host)) continue;
-    const e = m.index + m[0].length;
-    add(e - host.length, e, 'HOST', 7);
+    end = m.index + m[0].length;
+    add(end - host.length, end, 'HOST', 7);
   }
   CFG_HOST.lastIndex = 0;
   while ((m = CFG_HOST.exec(text))) {
-    const host = m[1];
+    host = m[1];
     if (!host || host.toLowerCase() === 'localhost' || validV4(host)) continue;
-    const e = m.index + m[0].length;
-    add(e - host.length, e, 'HOST', 7);
+    end = m.index + m[0].length;
+    add(end - host.length, end, 'HOST', 7);
   }
   KV_HOST.lastIndex = 0;
   while ((m = KV_HOST.exec(text))) {
-    const host = m[1] || m[2] || m[3];
+    host = m[1] || m[2] || m[3];
     if (!host || /^(?:localhost|true|false|null|none)$/i.test(host) || validV4(host)) continue;
     const quoted = m[3] === undefined;
-    const e = m.index + m[0].length - (quoted ? 1 : 0);
-    add(e - host.length, e, 'HOST', 7);
+    end = m.index + m[0].length - (quoted ? 1 : 0);
+    add(end - host.length, end, 'HOST', 7);
   }
 }
 
@@ -518,7 +671,8 @@ const ID_KW = /\b(?:(?:client|tenant|account|org(?:anization)?|project|subscript
 const SKIP_ID_VAL = /^(?:true|false|null|none|nil|undefined|string|number|boolean|str|int|uuid|id|auto|default|self|this|brak|n\/a|nd)$/i;
 
 function detectIDs(text, add) {
-  UUID_RE.lastIndex = 0; let m;
+  let m, end;
+  UUID_RE.lastIndex = 0;
   while ((m = UUID_RE.exec(text))) add(m.index, m.index + m[0].length, 'ID', 4);
   for (const re of CLOUD_ID) {
     re.lastIndex = 0;
@@ -526,8 +680,8 @@ function detectIDs(text, add) {
   }
   CLOUD_PATH_ID.lastIndex = 0;
   while ((m = CLOUD_PATH_ID.exec(text))) {
-    const e = m.index + m[0].length;
-    add(e - m[1].length, e, 'ID', 4);
+    end = m.index + m[0].length;
+    add(end - m[1].length, end, 'ID', 4);
   }
   IBAN_RE.lastIndex = 0;
   while ((m = IBAN_RE.exec(text))) {
@@ -551,12 +705,13 @@ function detectIDs(text, add) {
   while ((m = CASE_ID.exec(text))) add(m.index, m.index + m[0].length, 'ID', 4);
   DOC_ID_LINE.lastIndex = 0;
   while ((m = DOC_ID_LINE.exec(text))) {
-    let val = m[1].trim(), s = m.index + m[0].length - m[1].length, e = s + val.length;
+    let val = m[1].trim(), s = m.index + m[0].length - m[1].length;
+    end = s + val.length;
     if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-      val = val.slice(1, -1).trim(); s++; e = s + val.length;
+      val = val.slice(1, -1).trim(); s++; end = s + val.length;
     }
     if (!val || SKIP_ID_VAL.test(val) || val[0] === '$' || val[0] === '%' || val.startsWith('{{')) continue;
-    add(s, e, 'ID', 4);
+    add(s, end, 'ID', 4);
   }
 
   ID_KW.lastIndex = 0; let keyEnd = 0;
@@ -583,13 +738,13 @@ function detectIDs(text, add) {
     const v = vm[1] !== undefined ? vm[1] : vm[2] !== undefined ? vm[2] : vm[3] !== undefined ? vm[3] : vm[4];
     if (!v || !/[A-Za-z0-9]/.test(v) || SKIP_ID_VAL.test(v)) continue;
     if (v[0] === '$' || v[0] === '%' || v.startsWith('{{')) continue;
-    const e = vpos + vm[0].length - (quoted ? 1 : 0);
-    add(e - v.length, e, 'ID', 4);
+    end = vpos + vm[0].length - (quoted ? 1 : 0);
+    add(end - v.length, end, 'ID', 4);
   }
 }
 
 /* ---------- 9. Użytkownicy / loginy (dbuser, superuser, login, username, sudo/ssh, ścieżki) ---------- */
-const USER_KW = /(?<![A-Za-z0-9])(?:[A-Za-z0-9]*user(?:[_-]?\d+)?|[A-Za-z0-9]*username(?:[_-]?\d+)?|[A-Za-z0-9]*user[_-]?name(?:[_-]?\d+)?|[A-Za-z0-9]*login(?:[_-]?(?:name|\d+)|\d*)?|account[_-]?name|service[_-]?account|owner(?:[_-]?\d+)?)\b/gi;
+const USER_KW = /(?<![A-Za-z0-9])(?:[A-Za-z0-9]*user(?:[_-]?\d+)?|[A-Za-z0-9]*username(?:[_-]?\d+)?|[A-Za-z0-9]*user[_-]?name(?:[_-]?\d+)?|[A-Za-z0-9]*login(?:[_-]?(?:name|\d+)|\d*)?|account[_-]?name|service[_-]?account|owner(?:[_-]?\d+)?|użytkownik|uzytkownik|nazwa[_-]?użytkownika|nazwa[_-]?uzytkownika)\b/gi;
 const USER_SKIP_PREFIX = /^(?:ab|acc|ca|diff|exc|ref|tro|pa|m|r|caro|delo)user$/i;
 const CISCO_USER = /\busername[ \t]+([A-Za-z0-9_.\-]+)(?=[ \t]+(?:password|secret|privilege|nopassword|algorithm-type)\b)/gi;
 const LDAP_ID = /\b(?:uid|cn|sAMAccountName)=([^,;\s"'<>]+)(?=(?:,[ \t]*(?:ou|cn|dc|o)=)+)/gi;
@@ -605,22 +760,22 @@ const LOG_USER = [
 ];
 
 function detectUsers(text, add) {
-  let m;
+  let m, end;
   CISCO_USER.lastIndex = 0;
   while ((m = CISCO_USER.exec(text))) {
-    const e = m.index + m[0].length;
-    add(e - m[1].length, e, 'USER', 3);
+    end = m.index + m[0].length;
+    add(end - m[1].length, end, 'USER', 3);
   }
   LDAP_ID.lastIndex = 0;
   while ((m = LDAP_ID.exec(text))) {
-    const e = m.index + m[0].length;
-    add(e - m[1].length, e, 'USER', 3);
+    end = m.index + m[0].length;
+    add(end - m[1].length, end, 'USER', 3);
   }
   HOME_USER.lastIndex = 0;
   while ((m = HOME_USER.exec(text))) {
     if (HOME_SKIP.test(m[1])) continue;
-    const e = m.index + m[0].length;
-    add(e - m[1].length, e, 'USER', 3);
+    end = m.index + m[0].length;
+    add(end - m[1].length, end, 'USER', 3);
   }
   SSH_IP_USER.lastIndex = 0;
   while ((m = SSH_IP_USER.exec(text))) {
@@ -630,20 +785,20 @@ function detectUsers(text, add) {
   }
   CLI_CMD_USER.lastIndex = 0;
   while ((m = CLI_CMD_USER.exec(text))) {
-    const e = m.index + m[0].length;
-    add(e - m[1].length, e, 'USER', 3);
+    end = m.index + m[0].length;
+    add(end - m[1].length, end, 'USER', 3);
   }
   SQL_USER.lastIndex = 0;
   while ((m = SQL_USER.exec(text))) {
     if (SQL_USER_SKIP.test(m[1])) continue;
-    const e = m.index + m[0].length;
-    add(e - m[1].length, e, 'USER', 3);
+    end = m.index + m[0].length;
+    add(end - m[1].length, end, 'USER', 3);
   }
   for (const re of LOG_USER) {
     re.lastIndex = 0;
     while ((m = re.exec(text))) {
-      const e = m.index + m[0].length;
-      add(e - m[1].length, e, 'USER', 3);
+      end = m.index + m[0].length;
+      add(end - m[1].length, end, 'USER', 3);
     }
   }
   USER_KW.lastIndex = 0;
@@ -665,11 +820,13 @@ function detectUsers(text, add) {
     const vm = VAL.exec(text);
     if (!vm) continue;
     const quoted = vm[4] === undefined;
-    const v = vm[1] !== undefined ? vm[1] : vm[2] !== undefined ? vm[2] : vm[3] !== undefined ? vm[3] : vm[4];
+    let v = vm[1] !== undefined ? vm[1] : vm[2] !== undefined ? vm[2] : vm[3] !== undefined ? vm[3] : vm[4];
     if (!v || !/[A-Za-z0-9]/.test(v) || SKIP_ID_VAL.test(v)) continue;
     if (v[0] === '$' || v[0] === '%' || v.startsWith('{{')) continue;
-    const e = vpos + vm[0].length - (quoted ? 1 : 0);
-    add(e - v.length, e, 'USER', 3);
+    const vs = vpos + vm[0].length - (quoted ? 1 : 0) - v.length;
+    if (!quoted) v = v.replace(/[.:]+$/, '');
+    if (!v) continue;
+    add(vs, vs + v.length, 'USER', 3);
   }
 }
 
@@ -687,17 +844,18 @@ const PORT_DOCKER = /(?:^|[ \t])(?:-p|--publish)[ \t]+["']?(?:\d{1,3}(?:\.\d{1,3
 const PORT_PROTO = /(?:(?<![A-Za-z0-9_.\/-])([1-9]\d{0,4}):)?(?<![A-Za-z0-9_.\/-])([1-9]\d{0,4})\/(?:tcp|udp)\b/gi;
 
 function detectPorts(text, add) {
-  let m;
+  let m, end, p1, p2, idx1, idx2;
   PORT_COLON_V4.lastIndex = 0;
   while ((m = PORT_COLON_V4.exec(text))) {
-    const s = m.index, ip = m[1], p1 = m[2], p2 = m[3];
+    const s = m.index, ip = m[1];
+    p1 = m[2]; p2 = m[3];
     if (!validV4(ip) || !validPort(p1)) continue;
     const pc = text.charAt(s - 1);
     if (isDigit(pc) || (pc === '.' && isDigit(text.charAt(s - 2)))) continue;
-    const idx1 = s + ip.length + 1;
+    idx1 = s + ip.length + 1;
     add(idx1, idx1 + p1.length, 'PORT', 6);
     if (p2 && validPort(p2)) {
-      const idx2 = idx1 + p1.length + 1;
+      idx2 = idx1 + p1.length + 1;
       add(idx2, idx2 + p2.length, 'PORT', 6);
     }
   }
@@ -705,8 +863,8 @@ function detectPorts(text, add) {
   while ((m = PORT_COLON_V6.exec(text))) {
     const inner = m[1], p = m[2];
     if (!validPort(p) || (inner !== '::' && !validV6(inner))) continue;
-    const e = m.index + m[0].length;
-    add(e - p.length, e, 'PORT', 6);
+    end = m.index + m[0].length;
+    add(end - p.length, end, 'PORT', 6);
   }
   PORT_COLON_HOST.lastIndex = 0;
   while ((m = PORT_COLON_HOST.exec(text))) {
@@ -718,21 +876,21 @@ function detectPorts(text, add) {
       const isLoc = host.toLowerCase() === 'localhost';
       if (!isLoc && (dot === -1 || !TLD_SET.has(host.slice(dot + 1).toLowerCase()))) continue;
     }
-    const e = m.index + m[0].length;
-    add(e - p.length, e, 'PORT', 6);
+    end = m.index + m[0].length;
+    add(end - p.length, end, 'PORT', 6);
   }
   PORT_DIR.lastIndex = 0;
   while ((m = PORT_DIR.exec(text))) {
     const p = m[1];
     if (!validPort(p)) continue;
-    const e = m.index + m[0].length;
-    add(e - p.length, e, 'PORT', 6);
+    end = m.index + m[0].length;
+    add(end - p.length, end, 'PORT', 6);
   }
   PORT_DOCKER.lastIndex = 0;
   while ((m = PORT_DOCKER.exec(text))) {
-    const p1 = m[1], p2 = m[2];
+    p1 = m[1]; p2 = m[2];
     if (p1 && validPort(p1)) {
-      const idx1 = m.index + m[0].length - (p2 ? p2.length + 1 + p1.length : p1.length);
+      idx1 = m.index + m[0].length - (p2 ? p2.length + 1 + p1.length : p1.length);
       add(idx1, idx1 + p1.length, 'PORT', 6);
     }
     if (p2 && validPort(p2)) {
@@ -742,10 +900,10 @@ function detectPorts(text, add) {
   }
   PORT_PROTO.lastIndex = 0;
   while ((m = PORT_PROTO.exec(text))) {
-    const p1 = m[1], p2 = m[2];
+    p1 = m[1]; p2 = m[2];
     if (p1 && validPort(p1)) add(m.index, m.index + p1.length, 'PORT', 6);
     if (validPort(p2)) {
-      const idx2 = m.index + (p1 ? p1.length + 1 : 0);
+      idx2 = m.index + (p1 ? p1.length + 1 : 0);
       add(idx2, idx2 + p2.length, 'PORT', 6);
     }
   }
@@ -770,8 +928,8 @@ function detectPorts(text, add) {
     const quoted = vm[4] === undefined;
     const v = vm[1] !== undefined ? vm[1] : vm[2] !== undefined ? vm[2] : vm[3] !== undefined ? vm[3] : vm[4];
     if (!v || !validPort(v)) continue;
-    const e = vpos + vm[0].length - (quoted ? 1 : 0);
-    add(e - v.length, e, 'PORT', 6);
+    end = vpos + vm[0].length - (quoted ? 1 : 0);
+    add(end - v.length, end, 'PORT', 6);
   }
 }
 
@@ -791,22 +949,35 @@ function secretLike(c, padded) {
 function detectLong(text, add) {
   LONG.lastIndex = 0; let m;
   while ((m = LONG.exec(text))) {
-    const core = m[0].replace(/=+$/, '');
-    if (secretLike(core, m[0].length !== core.length)) add(m.index, m.index + m[0].length, 'TOKEN', 8);
+    const raw = m[0];
+    const slashes = raw.split('/').length - 1;
+    const prev = text.charAt(m.index - 1);
+    const pathLike = slashes >= 2 && !raw.includes('+') && (prev === '.' || prev === '/' || /\/(?:api|services|webhooks|v\d+)\//i.test(raw));
+    if (pathLike) {
+      let off = 0;
+      for (const seg of raw.split('/')) {
+        const segCore = seg.replace(/=+$/, '');
+        if (segCore.length >= 20 && secretLike(segCore, seg.length !== segCore.length)) add(m.index + off, m.index + off + seg.length, 'TOKEN', 8);
+        off += seg.length + 1;
+      }
+      continue;
+    }
+    const core = raw.replace(/=+$/, '');
+    if (secretLike(core, raw.length !== core.length)) add(m.index, m.index + raw.length, 'TOKEN', 8);
   }
 }
 
 /* ---------- 12. Dane osobowe / PII (telefony, daty ur., osoby, adresy, firmy) ---------- */
 const PHONE_INTL = /(?<![A-Za-z0-9.])\+(?:[1-9]\d{0,2}(?:[ \-](?:\(\d{1,4}\)|\d{1,4})){2,5}|[1-9]\d{7,14})(?![A-Za-z0-9.\-])/g;
-const PHONE_CTX = /(?<![A-Za-z0-9_])(?:telefon(?:[ \t]+kontaktowy)?|tel\.?|kom\.?|phone(?:[ \t]+number)?|mobile|cell|fax)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[^\r\n]{0,120}/gi;
+const PHONE_CTX = /(?<![A-Za-z0-9_])(?:telefon(?:[ \t]+kontaktowy)?|tel\.?|kom\.?|komórk\w*|komork\w*|zadzwo(?:ń|n)\w*|phone(?:[ \t]+number)?|mobile|cell|fax)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[^\r\n]{0,120}/gi;
 const PHONE_INNER = /(?:\(\d{2,4}\)|\b\d{2,4})(?:[ \-]\d{2,4}){1,4}\b|\b\d{9}\b/g;
-const DOB_LINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:data[ \t]+urodzenia|data[ \t]+ur\.?|rok[ \t]+urodzenia|date[ \t]+of[ \t]+birth|birth[ \t]?date|birth[ \t]?year|dob)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*:[ \t]*(\d{1,4}(?:[.\-\/]\d{1,2}[.\-\/]\d{2,4})?(?:[ \t]*r\.?)?)/gi;
+const DOB_LINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:data[ \t]+urodzenia|data[ \t]+ur\.?|rok[ \t]+urodzenia|date[ \t]+of[ \t]+birth|birth[ \t]?date|birth[ \t]?year|dob)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*(?::[ \t]*|[ \t]+)(\d{1,4}(?:[.\-\/]\d{1,2}[.\-\/]\d{2,4})?(?:[ \t]*r\.?)?)/gi;
 const PERSON_LINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:imi[eę][ \t]+i[ \t]+nazwisko|imi[eę]|nazwisko|first[ \t]+name|last[ \t]+name|full[ \t]+name|pacjent|konsultant|lekarz)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*:[ \t]*([^\r\n]{2,100})/gi;
 const PERSON_HON = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_\/.\-])(?:Pan(?:a|u|em|i|ią)?|dr\.?|lek\.|mgr|prof\.|mec\.|inż\.|Mr\.|Mrs\.|Ms\.|Dr\.|Prof\.)[ \t]+([A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,})?(?:[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,})?){0,2})/g;
 const PERSON_ROLE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:konsultant(?:em|a|owi|ką|ki)?|pacjent(?:em|a|owi|ką|ki)?|klient(?:em|a|owi|ką|ki)?|lekarz(?:em|a|owi)?|pracownik(?:iem|a|owi)?|pełnomocnik(?:iem|a)?|komornik(?:iem|a)?)[ \t]+(\(?)([A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,})?[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,})?)(?=\)?(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_]))/g;
-const PERSON_WORD = /[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]+/g;
+const PERSON_WORD = /[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*/g;
 const PERSON_STRICT_VAL = /^["']?[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]+(?:[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]+){0,3}["']?$/;
-const TITLE_WORD = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]{4,}(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])/g;
+const TITLE_WORD = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+(?:-[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]+)*(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])/g;
 const ADDR_LINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:adres(?:[ \t]+(?:zamieszkania|korespondencyjny|dostawy|siedziby|firmy|domowy))?|(?:street|mailing|billing|shipping|home|residential)[ \t]+address|ulica|street|kod[ \t]+pocztowy|postal[ \t]+code|zip[ \t]+code)(?![ \t]+(?:e-?mail|ip|mac|url|host|server|serwera|strony|bramy|dns|proxy)\b)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*:[ \t]*([^\r\n]{3,160})/gi;
 const ADDR_INLINE = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:ul|al|pl)\.[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż\-]{2,}(?:[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ0-9][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9\/\-]*){0,3}(?:,[ \t]*\d{2}-\d{3}[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż\-]{2,}(?:,[ \t]*woj\.[ \t]+[a-ząćęłńóśźż\-]+)?)?(?:[ \t]+w[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]{2,})?/g;
 const POSTAL_CITY = /\b\d{2}-\d{3}[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]{2,}(?:[ \t]+[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż\-]{2,})?(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])/g;
@@ -817,19 +988,19 @@ const SKIP_PII_VAL = /^(?:true|false|null|none|nil|undefined|brak|n\/a|nd|unknow
 const PII_SUBTYPES = new Set(['PHONE', 'PERSON', 'ADDRESS', 'ORG', 'DATE']);
 
 function detectPII(text, add) {
-  let m;
+  let m, dig, base, raw, s, end;
   PHONE_INTL.lastIndex = 0;
   while ((m = PHONE_INTL.exec(text))) {
-    const dig = m[0].replace(/\D/g, '');
+    dig = m[0].replace(/\D/g, '');
     if (dig.length >= 8 && dig.length <= 15) add(m.index, m.index + m[0].length, 'PHONE', 5);
   }
   PHONE_CTX.lastIndex = 0;
   while ((m = PHONE_CTX.exec(text))) {
     const seg = m[0]; let pm; PHONE_INNER.lastIndex = 0;
     while ((pm = PHONE_INNER.exec(seg))) {
-      const dig = pm[0].replace(/\D/g, '');
+      dig = pm[0].replace(/\D/g, '');
       if (dig.length >= 7 && dig.length <= 12) {
-        const s = m.index + pm.index;
+        s = m.index + pm.index;
         if (s > 0 && text[s - 1] === '+') continue; // obejmuje już PHONE_INTL
         add(s, s + pm[0].length, 'PHONE', 5);
       }
@@ -837,35 +1008,39 @@ function detectPII(text, add) {
   }
   DOB_LINE.lastIndex = 0;
   while ((m = DOB_LINE.exec(text))) {
-    const e = m.index + m[0].length;
-    add(e - m[1].length, e, 'DATE', 5);
+    end = m.index + m[0].length;
+    add(end - m[1].length, end, 'DATE', 5);
   }
   const personWords = new Set();
-  const addPersonParts = (str, base) => {
+  const addPersonParts = (str, pBase) => {
     PERSON_WORD.lastIndex = 0; let wm;
     while ((wm = PERSON_WORD.exec(str))) {
       const w = wm[0];
       if (w.length < 2 || SKIP_PII_VAL.test(w)) continue;
-      const ws = base + wm.index;
+      const ws = pBase + wm.index;
       add(ws, ws + w.length, 'PERSON', 5);
-      if (w.length >= 5 && /^[A-ZĄĆĘŁŃÓŚŹŻ]/.test(w)) personWords.add(w);
+      if (w.length >= 4 && /^[A-ZĄĆĘŁŃÓŚŹŻ]/.test(w)) {
+        personWords.add(w);
+        if (w.includes('-')) for (const part of w.split('-')) if (part.length >= 4) personWords.add(part);
+      }
     }
   };
   PERSON_LINE.lastIndex = 0;
   while ((m = PERSON_LINE.exec(text))) {
-    const raw = m[1], base = m.index + m[0].length - raw.length, t = raw.trim();
-    if (!t || SKIP_PII_VAL.test(t) || t[0] === '$' || t[0] === '%' || t.startsWith('{{') || PH.test(t)) continue;
-    if (/^(?:pacjent|konsultant|lekarz)/i.test(m[0]) && !PERSON_STRICT_VAL.test(t)) continue;
+    raw = m[1]; base = m.index + m[0].length - raw.length;
+    const trimmedVal = raw.trim();
+    if (!trimmedVal || SKIP_PII_VAL.test(trimmedVal) || trimmedVal[0] === '$' || trimmedVal[0] === '%' || trimmedVal.startsWith('{{') || PH.test(trimmedVal)) continue;
+    if (/^(?:pacjent|konsultant|lekarz)/i.test(m[0]) && !PERSON_STRICT_VAL.test(trimmedVal)) continue;
     addPersonParts(raw, base);
   }
   PERSON_HON.lastIndex = 0;
   while ((m = PERSON_HON.exec(text))) {
-    const base = m.index + m[0].length - m[1].length;
+    base = m.index + m[0].length - m[1].length;
     addPersonParts(m[1], base);
   }
   PERSON_ROLE.lastIndex = 0;
   while ((m = PERSON_ROLE.exec(text))) {
-    const base = m.index + m[0].length - m[2].length;
+    base = m.index + m[0].length - m[2].length;
     addPersonParts(m[2], base);
   }
   if (personWords.size) {
@@ -873,14 +1048,16 @@ function detectPII(text, add) {
     while ((m = TITLE_WORD.exec(text))) {
       if (personWords.has(m[0])) add(m.index, m.index + m[0].length, 'PERSON', 5);
     }
+    addPersonInflections(text, personWords, add);
   }
   ADDR_LINE.lastIndex = 0;
   while ((m = ADDR_LINE.exec(text))) {
-    const raw = m[1], trimmed = raw.trimEnd();
+    raw = m[1];
+    const trimmed = raw.trimEnd();
     if (!trimmed || SKIP_PII_VAL.test(trimmed) || trimmed[0] === '$' || trimmed[0] === '%' || trimmed.startsWith('{{')) continue;
-    let s = m.index + m[0].length - raw.length, e = s + trimmed.length;
-    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) { s++; e--; }
-    add(s, e, 'ADDRESS', 6);
+    s = m.index + m[0].length - raw.length; end = s + trimmed.length;
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) { s++; end--; }
+    add(s, end, 'ADDRESS', 6);
   }
   ADDR_INLINE.lastIndex = 0;
   while ((m = ADDR_INLINE.exec(text))) add(m.index, m.index + m[0].length, 'ADDRESS', 6);
@@ -889,19 +1066,256 @@ function detectPII(text, add) {
 
   ORG_LINE.lastIndex = 0;
   while ((m = ORG_LINE.exec(text))) {
-    const raw = m[1], trimmed = raw.trimEnd();
-    if (!trimmed || SKIP_PII_VAL.test(trimmed) || trimmed[0] === '$' || trimmed[0] === '%' || trimmed.startsWith('{{')) continue;
-    let s = m.index + m[0].length - raw.length, e = s + trimmed.length;
-    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) { s++; e--; }
-    add(s, e, 'ORG', 5);
+    raw = m[1];
+    const orgTrim = raw.trimEnd();
+    if (!orgTrim || SKIP_PII_VAL.test(orgTrim) || orgTrim[0] === '$' || orgTrim[0] === '%' || orgTrim.startsWith('{{')) continue;
+    s = m.index + m[0].length - raw.length; end = s + orgTrim.length;
+    if ((orgTrim.startsWith('"') && orgTrim.endsWith('"')) || (orgTrim.startsWith("'") && orgTrim.endsWith("'"))) { s++; end--; }
+    add(s, end, 'ORG', 5);
   }
   ORG_SUFFIX.lastIndex = 0;
   while ((m = ORG_SUFFIX.exec(text))) add(m.index, m.index + m[0].length, 'ORG', 5);
   ORG_FAC.lastIndex = 0;
   while ((m = ORG_FAC.exec(text))) {
-    const e = m.index + m[0].length;
-    add(e - m[1].length, e, 'ORG', 5);
+    end = m.index + m[0].length;
+    add(end - m[1].length, end, 'ORG', 5);
   }
+}
+
+function inflectSingleWord(w) {
+  const out = new Set([w]);
+  if (w.length < 4) return out;
+  const adj = /^([A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}?(?:s|c|dz|z)k)(?:iego|iemu|iej|im|imi|ich|i|a|ą|ie)$/i.exec(w);
+  if (adj) {
+    const stem = adj[1];
+    for (const adjSuf of ['i', 'a', 'iego', 'iemu', 'iej', 'im', 'ą', 'ie', 'imi', 'ich']) out.add(stem + adjSuf);
+    return out;
+  }
+  const stems = new Set([w]);
+  const stripped = /^([A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźż]{2,}?)(?:owi|iem|em|ego|emu|iej|ej|ach|ami|ów|om|ie|a|ę|ą|u|y|i)$/.exec(w);
+  if (stripped && stripped[1].length >= 3) stems.add(stripped[1]);
+  for (const st of stems) {
+    out.add(st);
+    for (const suf of ['a', 'em', 'owi', 'ie', 'ę', 'ą', 'ach', 'ami', 'ów', 'om', 'y', 'e', 'i', 'u', 'ego', 'emu', 'ej']) {
+      if ((st + suf).length >= 4) out.add(st + suf);
+    }
+  }
+  return out;
+}
+
+function addPersonInflections(text, words, add) {
+  const boundary = /[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_]/;
+  const forms = new Set();
+  for (const w of words) {
+    if (w.includes('-')) {
+      const parts = w.split('-');
+      if (parts.length === 2) {
+        const p1 = inflectSingleWord(parts[0]), p2 = inflectSingleWord(parts[1]);
+        for (const a of p1) for (const b of p2) forms.add(a + '-' + b);
+      }
+    } else if (w.length >= 5) {
+      for (const f of inflectSingleWord(w)) if (f.length >= 5) forms.add(f);
+    }
+  }
+  for (const form of forms) {
+    if (words.has(form) || !/^[A-ZĄĆĘŁŃÓŚŹŻ]/.test(form)) continue;
+    let i = -1;
+    while ((i = text.indexOf(form, i + 1)) !== -1) {
+      if (boundary.test(text.charAt(i - 1)) || boundary.test(text.charAt(i + form.length))) continue;
+      add(i, i + form.length, 'PERSON', 5);
+    }
+  }
+}
+
+function peselOk(s) {
+  if (!/^\d{11}$/.test(s)) return false;
+  const w = [1, 3, 7, 9, 1, 3, 7, 9, 1, 3];
+  let sum = 0;
+  for (let i = 0; i < 10; i++) sum += w[i] * (s.charCodeAt(i) - 48);
+  if ((10 - (sum % 10)) % 10 !== s.charCodeAt(10) - 48) return false;
+  let mm = +s.slice(2, 4), dd = +s.slice(4, 6);
+  if (mm >= 21 && mm <= 32) mm -= 20;
+  else if (mm >= 41 && mm <= 52) mm -= 40;
+  else if (mm >= 61 && mm <= 72) mm -= 60;
+  else if (mm >= 81 && mm <= 92) mm -= 80;
+  else if (mm < 1 || mm > 12) return false;
+  const yy = +s.slice(0, 2);
+  const dim = [31, yy % 4 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return dd >= 1 && dd <= dim[mm - 1];
+}
+function nipOk(s) {
+  if (!/^\d{10}$/.test(s)) return false;
+  const w = [6, 5, 7, 2, 3, 4, 5, 6, 7];
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += w[i] * (s.charCodeAt(i) - 48);
+  const c = sum % 11;
+  return c !== 10 && c === s.charCodeAt(9) - 48;
+}
+function regonOk(s) {
+  const chk = (body, weights) => {
+    let sum = 0;
+    for (let i = 0; i < weights.length; i++) sum += weights[i] * (body.charCodeAt(i) - 48);
+    const c = sum % 11;
+    return (c === 10 ? 0 : c) === body.charCodeAt(weights.length) - 48;
+  };
+  if (/^\d{9}$/.test(s)) return chk(s, [8, 9, 2, 3, 4, 5, 6, 7]);
+  if (/^\d{14}$/.test(s)) return regonOk(s.slice(0, 9)) && chk(s, [2, 4, 8, 5, 0, 9, 7, 3, 6, 1, 2, 4, 8]);
+  return false;
+}
+
+/* SQL / XML / YAML / cookie / webhook / PESEL / host jednoczłonowy / proza */
+const SQL_PW_Q = /\b(?:with[ \t]+)?password[ \t]+'([^'\r\n]+)'/gi;
+const SQL_PW_QQ = /\b(?:with[ \t]+)?password[ \t]+"([^"\r\n]+)"/gi;
+const SQL_PW_B = /\bwith[ \t]+password[ \t]+([^'"\s;(),]{3,})/gi;
+const SQL_PW_SKIP = /^(?:authentication|auth|protection|encryption|hashing|hash|login|policy|expiration|expiry|reset|change|prompt|verification|enabled|disabled|required|optional|null|none|true|false|set|to|by|for|on|in)$/i;
+const XML_SEC = /<(?:[A-Za-z0-9_:-]*:)?(?:password|passwd|passphrase|secret|token|haslo|hasło|klucz|api[-_]?key)\b[^>]*>([^<]{1,800})<\//gi;
+const COOKIE_KV = /\b(?:session(?:id|_id)?|sess|sid|jwt|auth_token|access_token|refresh_token|csrftoken|csrf)\s*[=:]\s*["']?([^;\s"',]{6,})/gi;
+const QUERY_SEC = /[?&](?:sig|signature|token|secret|password|passwd|api[_-]?key|access[_-]?token|refresh[_-]?token)=([^&#\s"'<>]+)/gi;
+const SLACK_WH = /https?:\/\/hooks\.slack\.com(\/services\/T[A-Z0-9]+\/B[A-Z0-9]+\/[A-Za-z0-9]{20,})/gi;
+const DISCORD_WH = /https?:\/\/(?:ptb\.|canary\.)?discord(?:app)?\.com(\/api\/webhooks\/\d{16,22}\/[A-Za-z0-9_\-]{20,})/gi;
+const TEAMS_WH = /https?:\/\/[A-Za-z0-9.-]+\.webhook\.office\.com\/webhookb2\/[^\s"'<>]+/gi;
+const LABELED_PL = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(pesel|nip|regon)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]*[:#.=]?[ \t]*([0-9][0-9 \-]{6,22}[0-9])/gi;
+const NIP_FMT = /\b\d{3}-\d{3}-\d{2}-\d{2}\b|\b\d{3}-\d{2}-\d{2}-\d{3}\b/g;
+const BARE_PESEL = /(?<!\d)\d{11}(?!\d)/g;
+const DOWOD = /(?<![A-Za-z0-9])(?:numer[ \t]+dowodu(?:[ \t]+osobistego)?|nr[ \t]+dowodu(?:[ \t]+osobistego)?|dow[oó]d(?:[ \t]+osobisty)?)(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż])[ \t]*[:#.]?[ \t]*([A-Z]{3}[ \t]?\d{6})/gi;
+const USER_ID_SP = /\buser[ \t]+id\b[ \t]*[=:][ \t]*["']?([A-Za-z0-9_.\-@\\]+)/gi;
+const BARE_KEY = /(?:^|[^A-Za-z0-9_])(?:(?:encryption|secret|private)[_-])?key(?![A-Za-z])[ \t]*[=:][ \t]*["']?([A-Fa-f0-9]{16,}|[A-Za-z0-9+/=_\-]{24,})/gi;
+const HOST_SINGLE = /(?:^|[\s"'[{,(;])(?:host(?:name)?|server(?:_?name)?|serwer)(?![A-Za-z0-9_])[ \t]*[=:][ \t]*["']?([A-Za-z0-9][A-Za-z0-9_.\-]{1,62})(?![A-Za-z0-9_.\-]|:[\/\\])/gi;
+const HOST_SINGLE_SKIP = /^(?:localhost|true|false|null|none|nil|nginx|apache|iis|tcp|udp|http|https|unix|auto|default|any|all|db)$/i;
+const PROSE_PW = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:(?:hasło|haslo)[ \t]+(?:to|wynosi|brzmi)|(?:password|passphrase)[ \t]+(?:is(?:[ \t]+set[ \t]+to)?|equals))(?![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])[ \t]+([^\r\n#;]{3,80})/gi;
+const PROSE_SKIP = /^(?:stored|required|missing|empty|set|used|enabled|disabled|correct|incorrect|wrong|ok|true|false|null|none|valid|invalid|expired|changed|reset|hashed|encrypted|strong|weak|mandatory|optional|brak|ustawione|wymagane|puste|poprawne|niepoprawne|błędne|bledne|the|a|an|not|nie)$/i;
+const SEED_PH = /\b(?:seed[ \t]+phrase|mnemonic(?:[ \t]+phrase)?|recovery[ \t]+phrase|słowa[ \t]+odzyskiwania|frazy?[ \t]+odzyskiwania|seed[ \t]*[:=])[ \t]*[:=\-]?[ \t]*((?:[a-z]{3,8}[ \t]+){11,23}[a-z]{3,8})\b/gi;
+const GPS_CTX = /(?<![A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż0-9_])(?:współrzędne|wspolrzedne|lokalizacja|gps|lat(?:itude)?|lon(?:gitude)?)(?![A-Za-z0-9_])[^\d\-\n]{0,24}(-?\d{1,3}\.\d{3,}\s*[,;/]\s*-?\d{1,3}\.\d{3,})/gi;
+const YAML_KEY = /^([ \t]*)["']?(?:[A-Za-z0-9_.-]*(?:password|passwd|passphrase|secret|token|haslo|hasło|klucz|api[-_]?key)[A-Za-z0-9_.-]*)["']?[ \t]*:[ \t]*[|>][+-]?[ \t]*$/gim;
+
+function addGroup(m, group, add, type, pri) {
+  const v = m[group];
+  if (!v) return;
+  const e = m.index + m[0].lastIndexOf(v) + v.length;
+  add(e - v.length, e, type, pri);
+}
+
+function detectYamlBlocks(text, add) {
+  YAML_KEY.lastIndex = 0;
+  let m;
+  while ((m = YAML_KEY.exec(text))) {
+    const indent = m[1].length;
+    let i = m.index + m[0].length;
+    if (text[i] === '\r') i++;
+    if (text[i] !== '\n') continue;
+    i++;
+    let s = -1, e = i;
+    while (i < text.length) {
+      let lineEnd = text.indexOf('\n', i);
+      if (lineEnd === -1) lineEnd = text.length;
+      let contentEnd = lineEnd;
+      if (contentEnd > i && text[contentEnd - 1] === '\r') contentEnd--;
+      const line = text.slice(i, contentEnd);
+      if (line.trim() !== '') {
+        const ind = (line.match(/^[ \t]*/) || [''])[0].length;
+        if (ind <= indent) break;
+        if (s < 0) s = i + ind;
+        e = contentEnd;
+      }
+      if (lineEnd >= text.length) break;
+      i = lineEnd + 1;
+    }
+    if (s >= 0 && e > s) add(s, e, 'SECRET', 3);
+    if (YAML_KEY.lastIndex === m.index) YAML_KEY.lastIndex++;
+  }
+}
+
+function detectExtra(text, add) {
+  let m, v;
+  for (const sqlRe of [SQL_PW_Q, SQL_PW_QQ]) {
+    sqlRe.lastIndex = 0;
+    while ((m = sqlRe.exec(text))) addGroup(m, 1, add, 'SECRET', 3);
+  }
+  SQL_PW_B.lastIndex = 0;
+  while ((m = SQL_PW_B.exec(text))) {
+    if (SQL_PW_SKIP.test(m[1]) || m[1][0] === '$' || PH.test(m[1])) continue;
+    addGroup(m, 1, add, 'SECRET', 3);
+  }
+  XML_SEC.lastIndex = 0;
+  while ((m = XML_SEC.exec(text))) {
+    const xmlRaw = m[1], trimmed = xmlRaw.trim();
+    if (!trimmed || trimmed[0] === '$' || trimmed.startsWith('{{')) continue;
+    const s = m.index + m[0].indexOf(xmlRaw) + (xmlRaw.length - xmlRaw.trimStart().length);
+    add(s, s + trimmed.length, 'SECRET', 3);
+  }
+  detectYamlBlocks(text, add);
+  COOKIE_KV.lastIndex = 0;
+  while ((m = COOKIE_KV.exec(text))) {
+    v = m[1];
+    if (SKIPVAL.test(v) || SKIP_ID_VAL.test(v) || v[0] === '$' || v[0] === '%' || v.startsWith('{{') || PH.test(v)) continue;
+    addGroup(m, 1, add, 'SECRET', 3);
+  }
+  QUERY_SEC.lastIndex = 0;
+  while ((m = QUERY_SEC.exec(text))) {
+    v = m[1];
+    if (PH.test(v) || v.length < 4 || SKIPVAL.test(v) || SKIP_ID_VAL.test(v) || v[0] === '$' || v[0] === '%' || v.startsWith('{{')) continue;
+    addGroup(m, 1, add, 'SECRET', 3);
+  }
+  for (const whRe of [SLACK_WH, DISCORD_WH]) {
+    whRe.lastIndex = 0;
+    while ((m = whRe.exec(text))) addGroup(m, 1, add, 'TOKEN', 2);
+  }
+  TEAMS_WH.lastIndex = 0;
+  while ((m = TEAMS_WH.exec(text))) add(m.index, m.index + m[0].length, 'TOKEN', 2);
+  LABELED_PL.lastIndex = 0;
+  while ((m = LABELED_PL.exec(text))) {
+    const digits = m[2].replace(/\D/g, '');
+    const kind = m[1].toLowerCase();
+    const ok = kind === 'pesel' ? digits.length === 11 : kind === 'nip' ? digits.length === 10 : (digits.length === 9 || digits.length === 14);
+    if (!ok) continue;
+    addGroup(m, 2, add, 'ID', 3);
+  }
+  NIP_FMT.lastIndex = 0;
+  while ((m = NIP_FMT.exec(text))) {
+    if (nipOk(m[0].replace(/\D/g, ''))) add(m.index, m.index + m[0].length, 'ID', 3);
+  }
+  BARE_PESEL.lastIndex = 0;
+  while ((m = BARE_PESEL.exec(text))) {
+    if (peselOk(m[0])) add(m.index, m.index + m[0].length, 'ID', 3);
+  }
+  DOWOD.lastIndex = 0;
+  while ((m = DOWOD.exec(text))) addGroup(m, 1, add, 'ID', 4);
+  USER_ID_SP.lastIndex = 0;
+  while ((m = USER_ID_SP.exec(text))) {
+    if (SKIP_ID_VAL.test(m[1])) continue;
+    addGroup(m, 1, add, 'USER', 3);
+  }
+  BARE_KEY.lastIndex = 0;
+  while ((m = BARE_KEY.exec(text))) {
+    if (/^(.)\1+$/.test(m[1])) continue;
+    addGroup(m, 1, add, 'SECRET', 3);
+  }
+  HOST_SINGLE.lastIndex = 0;
+  while ((m = HOST_SINGLE.exec(text))) {
+    const h = m[1];
+    if (!h || !/[A-Za-z]/.test(h) || HOST_SINGLE_SKIP.test(h) || validV4(h) || CONFIG_HOST_SKIP.test(h)) continue;
+    addGroup(m, 1, add, 'HOST', 7);
+  }
+  PROSE_PW.lastIndex = 0;
+  while ((m = PROSE_PW.exec(text))) {
+    let raw = m[1].trimEnd();
+    let ss = m.index + m[0].length - m[1].length;
+    const lead = raw.length - raw.trimStart().length;
+    ss += lead; raw = raw.trimStart();
+    if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+      ss++; raw = raw.slice(1, -1);
+    } else {
+      const cut = /[,.!?;()]|\s+(?:a|i|oraz|ale|lub|and|or|but|for|in|on|at|to|with|when|if)\b/i.exec(raw);
+      if (cut) raw = raw.slice(0, cut.index).trimEnd();
+    }
+    const firstWord = raw.split(/\s+/)[0] || '';
+    if (!raw || raw.length < 3 || PROSE_SKIP.test(raw) || PROSE_SKIP.test(firstWord) || raw[0] === '$' || PH.test(raw)) continue;
+    add(ss, ss + raw.length, 'SECRET', 3);
+  }
+  SEED_PH.lastIndex = 0;
+  while ((m = SEED_PH.exec(text))) addGroup(m, 1, add, 'SECRET', 2);
+  GPS_CTX.lastIndex = 0;
+  while ((m = GPS_CTX.exec(text))) addGroup(m, 1, add, 'ADDRESS', 5);
 }
 
 const DETECTORS = [
@@ -909,13 +1323,13 @@ const DETECTORS = [
   [detectKV, 'SECRET'], [detectCisco, 'SECRET', 'USER'], [detectUrlCreds, 'SECRET', 'USER'],
   [detectUsers, 'USER'], [detectIDs, 'ID'], [detectEmail, 'EMAIL'], [detectIPv6, 'IP'],
   [detectMAC, 'MAC'], [detectIPv4, 'IP'], [detectPorts, 'PORT'], [detectPII, 'PII'],
-  [detectHost, 'HOST'], [detectLong, 'TOKEN']
+  [detectHost, 'HOST'], [detectExtra, 'SECRET', 'TOKEN', 'USER', 'ID', 'HOST', 'PII'], [detectLong, 'TOKEN']
 ];
 
 /* ---------- Skarbiec mapowań (tylko RAM) ---------- */
 function newVault() {
   return {
-    byToken: new Map(),   // '<IP_01>' -> {type, value, manual}
+    byToken: new Map(),   // '<IP_01>' -> {type, value, values: Set, manual, wholeWord}
     byValue: new Map(),   // 'wartość' -> '<IP_01>'
     counters: new Map(),  // typ -> ostatni numer
     ignored: new Set(),   // wartości usunięte przez użytkownika — nie maskować ponownie
@@ -930,49 +1344,123 @@ function textTokens(text) {
   return set;
 }
 
-function registerToken(vault, type, value, manual, used) {
-  let n = vault.counters.get(type) || 0, tok;
+function registerToken(vlt, type, value, manual, used, wholeWord) {
+  let n = vlt.counters.get(type) || 0, tok;
   do { n++; tok = '<' + type + '_' + String(n).padStart(2, '0') + '>'; }
-  while (vault.byToken.has(tok) || (used && used.has(tok)));   // nigdy nie koliduj z tokenami już obecnymi w tekście
-  vault.counters.set(type, n);
-  vault.byToken.set(tok, { type, value, manual: !!manual });
-  vault.byValue.set(value, tok);
+  while (vlt.byToken.has(tok) || (used && used.has(tok)));   // nigdy nie koliduj z tokenami już obecnymi w tekście
+  vlt.counters.set(type, n);
+  vlt.byToken.set(tok, { type, value, values: new Set([value]), manual: !!manual, wholeWord: !!wholeWord });
+  vlt.byValue.set(value, tok);
   return tok;
 }
 
-function detectAll(text, enabled, vault) {
+function detectAll(text, enabled, vlt) {
   const cands = [];
-  const catOf = t => PII_SUBTYPES.has(t) ? 'PII' : t;
+  const catOf = ct => PII_SUBTYPES.has(ct) ? 'PII' : ct;
   const add = (s, e, type, pri) => {
     if (s >= e || !enabled[catOf(type)]) return;
     const val = text.slice(s, e);
-    if (PH.test(val) || vault.ignored.has(val)) return;
+    if (PH.test(val) || vlt.ignored.has(val)) return;
     cands.push({ s, e, type, pri, val });
   };
-  for (const [fn, ...cats] of DETECTORS) if (cats.some(c => enabled[c])) fn(text, add);
+  for (const [fn, ...cats] of DETECTORS) if (cats.some(cat => enabled[cat])) fn(text, add);
 
-  // Wartości znane z mapy: ręczne (pri 0, dowolna długość) i wcześniej wykryte (pri 9, z granicami tokena)
-  for (const [tok, en] of vault.byToken) {
-    const v = en.value, cat = catOf(en.type);
-    if (en.manual) { /* zawsze */ }
-    else if (en.type === 'PORT' || v.length < (cat === 'SECRET' || cat === 'ID' || cat === 'USER' || cat === 'PII' ? 6 : 4) || !enabled[cat]) continue;
-    if (vault.ignored.has(v)) continue;
-    const pri = en.manual ? 0 : 9;
-    const checkStart = !en.manual && isWord(v[0]);
-    const checkEnd = !en.manual && isWord(v[v.length - 1]);
-    let i = -1;
-    while ((i = text.indexOf(v, i + 1)) !== -1) {
-      if (checkStart && isWord(text.charAt(i - 1))) continue;
-      if (checkEnd && isWord(text.charAt(i + v.length))) continue;
-      cands.push({ s: i, e: i + v.length, type: en.type, pri, val: v });
+  // Wartości znane z mapy: ręczne (pri 0, dowolna długość, obsługa wielu fraz przypiętych do 1 tokena) i wcześniej wykryte (pri 9, z granicami tokena)
+  for (const en of vlt.byToken.values()) {
+    const cat = catOf(en.type);
+    const valSet = en.values ? en.values : [en.value];
+    for (const v of valSet) {
+      if (!v) continue;
+      if (en.manual) { /* zawsze */ }
+      else if (en.type === 'PORT' || v.length < (cat === 'SECRET' || cat === 'ID' || cat === 'USER' || cat === 'PII' ? 6 : 4) || !enabled[cat]) continue;
+      if (vlt.ignored.has(v)) continue;
+      const pri = en.manual ? 0 : 9;
+      const checkStart = en.manual ? (en.wholeWord ? isWord(v[0]) : false) : isWord(v[0]);
+      const checkEnd = en.manual ? (en.wholeWord ? isWord(v[v.length - 1]) : false) : isWord(v[v.length - 1]);
+      let i = -1;
+      while ((i = text.indexOf(v, i + 1)) !== -1) {
+        if (checkStart && isWord(text.charAt(i - 1))) continue;
+        if (checkEnd && isWord(text.charAt(i + v.length))) continue;
+        cands.push({ s: i, e: i + v.length, type: en.type, pri, val: v });
+      }
     }
   }
   return cands;
 }
 
 /* Zwraca {out, hits, count}. Modyfikuje vault (nowe tokeny). */
-function maskText(text, enabled, vault) {
-  const cands = detectAll(text, enabled, vault);
+const DEFANG_CHAR = /[A-Za-z0-9_.@\-]/;
+function normalizeScanText(text) {
+  let s = String(text || '').replace(/[\u200B-\u200D\uFEFF\u2060\u180E\u00AD]/g, '');
+  if (s.indexOf('[') === -1 && s.indexOf('(') === -1) return s;
+  s = s.replace(/(?<=[A-Za-z0-9])(?:\[dot\]|\(dot\))(?=[A-Za-z0-9])/gi, '.');
+  return s.replace(/\[\.\]|\(\.\)/g, (m, offset, str) => {
+    let l = offset, r = offset + m.length;
+    while (l > 0 && offset - l < 256 && (DEFANG_CHAR.test(str[l - 1]) || str[l - 1] === ']' || str[l - 1] === ')')) {
+      if ((str[l - 1] === ']' && str.slice(l - 3, l) === '[.]') || (str[l - 1] === ')' && str.slice(l - 3, l) === '(.)')) { l -= 3; continue; }
+      if (DEFANG_CHAR.test(str[l - 1])) { l--; continue; }
+      break;
+    }
+    while (r < str.length && r - offset < 256) {
+      if (str.slice(r, r + 3) === '[.]' || str.slice(r, r + 3) === '(.)') { r += 3; continue; }
+      if (DEFANG_CHAR.test(str[r])) { r++; continue; }
+      break;
+    }
+    const un = str.slice(l, r).replace(/\[\.\]|\(\.\)/g, '.');
+    if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(un)) return '.';
+    if (un.includes('@')) return '.';
+    const parts = un.split('.');
+    const last = parts[parts.length - 1];
+    if (parts.length >= 2 && TLD_SET.has(last.toLowerCase())) return '.';
+    return m;
+  });
+}
+function residualRisks(out) {
+  const risks = [];
+  const seen = new Set();
+  const push = (kind, line) => {
+    const key = kind + '@' + line;
+    if (seen.has(key) || risks.length >= 8) return;
+    seen.add(key);
+    risks.push({ kind, line });
+  };
+  const lines = String(out || '').split(/\r?\n/);
+  lines.forEach((line, idx) => {
+    const n = idx + 1;
+    const bare = line.replace(/<[A-Za-z][A-Za-z0-9_]*_\d+>/g, ' ');
+    if (/[^\s<]@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(bare) || /@[^\s>]*localhost\b/i.test(bare)) push('e-mail', n);
+    const ips = bare.match(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g) || [];
+    if (ips.some(validV4) && !/\b(?:version|ver|release|build|firmware|kernel|schema)\b/i.test(bare)) push('adres IP', n);
+    if (/hooks\.slack\.com\/services|discord(?:app)?\.com\/api\/webhooks|webhook\.office\.com\/webhookb2|\/api\/webhooks\/\d{16,}\/[A-Za-z0-9_\-]{10,}|\/services\/T[A-Z0-9]+\/B[A-Z0-9]+\/[A-Za-z0-9]{10,}/i.test(bare)) push('webhook', n);
+    if (/<(?:password|passwd|secret|token|haslo|hasło|klucz)\b[^>]*>\s*[^<\s][^<]*<\//i.test(line)) push('XML z sekretem', n);
+    if (/\bpassword\b[ \t]+['"][^'"]*[A-Za-z0-9][^'"]*['"]/i.test(bare)) push('SQL PASSWORD', n);
+    const nums = bare.match(/(?<!\d)\d{11}(?!\d)/g) || [];
+    if (nums.some(peselOk)) push('PESEL', n);
+    const kwRe = /(?:hasło|haslo|password|passphrase|secret|sekret|token|klucz|pesel|nip|regon)\b/gi;
+    let km;
+    while ((km = kwRe.exec(line))) {
+      const rest = line.slice(km.index + km[0].length);
+      const prose = /^\s*(?:to|is|wynosi)\s+(\S+)/i.exec(rest);
+      if (prose && !prose[1].startsWith('<') && /[A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż]/.test(prose[1]) && !PROSE_SKIP.test(prose[1])) push('hasło w zdaniu', n);
+      const kvv = /^\s*[:=]\s*["']?(<[A-Za-z][A-Za-z0-9_]*_\d+>|[^\s"'<,;}{\]]+)/.exec(rest);
+      if (kvv) {
+        if (kvv[1].startsWith('<')) {
+          const after = rest.slice(kvv[0].length);
+          if (
+            /^\s+[A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż]{3,}/.test(after) &&
+            !/^\s+[A-Za-z_][A-Za-z0-9_.\-]*\s*[:=]/.test(after) &&
+            !/^\s+(?:and|or|the|again|then|with|from|this|that|oraz|ale|lub|jest|not|nie|are)\b/i.test(after)
+          ) push('ogon linii przy haśle', n);
+        } else if (/[A-Za-z0-9ĄĆĘŁŃÓŚŹŻąćęłńóśźż]{2,}/.test(kvv[1]) && !SKIPVAL.test(kvv[1]) && !PROSE_SKIP.test(kvv[1])) push('wartość przy kluczu', n);
+      }
+      if (km[0].length === 0) break;
+    }
+  });
+  return risks;
+}
+function maskText(text, enabled, vlt) {
+  text = normalizeScanText(text);
+  const cands = detectAll(text, enabled, vlt);
   cands.sort((a, b) => a.pri - b.pri || (b.e - b.s) - (a.e - a.s) || a.s - b.s);
   const occ = new Uint8Array(text.length);
   const acc = [];
@@ -986,13 +1474,13 @@ function maskText(text, enabled, vault) {
   acc.sort((a, b) => a.s - b.s);
   const used = textTokens(text);
   const hits = new Map(); const parts = []; let pos = 0;
-  for (const c of acc) {
-    parts.push(text.slice(pos, c.s));
-    let tok = vault.byValue.get(c.val);
-    if (!tok) tok = registerToken(vault, c.type, c.val, false, used);
+  for (const item of acc) {
+    parts.push(text.slice(pos, item.s));
+    let tok = vlt.byValue.get(item.val);
+    if (!tok) tok = registerToken(vlt, item.type, item.val, false, used);
     parts.push(tok);
     hits.set(tok, (hits.get(tok) || 0) + 1);
-    pos = c.e;
+    pos = item.e;
   }
   parts.push(text.slice(pos));
   return { out: parts.join(''), hits, count: acc.length };
@@ -1000,11 +1488,11 @@ function maskText(text, enabled, vault) {
 
 /* Deanonimizacja: jedno przejście, 1:1, bez ponownego skanowania wstawionych wartości. */
 const TOKRE = /(?:<|&lt;)([A-Za-z][A-Za-z0-9_]{0,30}_\d{1,6})(?:>|&gt;)/g;
-function restoreText(text, vault) {
+function restoreText(text, vlt) {
   let restored = 0; const unknown = new Set(); const used = new Set();
   const out = text.replace(TOKRE, (m, name) => {
     const tok = '<' + name.toUpperCase() + '>';
-    const en = vault.byToken.get(tok);
+    const en = vlt.byToken.get(tok);
     if (!en) { unknown.add(m); return m; }
     restored++; used.add(tok);
     return en.value;
@@ -1021,6 +1509,115 @@ function normalizeLabel(raw) {
   return /^[A-Z][A-Z0-9_]*$/.test(t) ? t : '';
 }
 
+function parseExplicitToken(raw) {
+  const s = String(raw || '').trim()
+    .replace(/[łŁ]/g, 'L')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase().replace(/[<>]/g, '');
+  const m = /^([A-Z][A-Z0-9_]{0,23})_(\d{1,6})$/.exec(s);
+  if (!m) return null;
+  const type = m[1].replace(/_+$/, '');
+  const num = parseInt(m[2], 10);
+  if (!type || !num) return null;
+  const tok = '<' + type + '_' + String(num).padStart(2, '0') + '>';
+  return { tok, type, num };
+}
+
+function findMatchesInSource(text, query, ignoreCase, wholeWord) {
+  const q = String(query || '');
+  if (!q || !text) return [];
+  const hay = ignoreCase ? text.toLowerCase() : text;
+  const needle = ignoreCase ? q.toLowerCase() : q;
+  const res = [];
+  let i = 0;
+  while (i <= hay.length - needle.length) {
+    const pos = hay.indexOf(needle, i);
+    if (pos === -1) break;
+    const end = pos + needle.length;
+    let ok = true;
+    if (wholeWord) {
+      if (isWord(text.charAt(pos - 1)) || isWord(text.charAt(end))) ok = false;
+    }
+    const slice = text.slice(pos, end);
+    if (PH.test(slice)) ok = false;
+    if (ok) {
+      res.push({ s: pos, e: end, val: slice });
+      i = end;
+    } else {
+      i = pos + 1;
+    }
+  }
+  return res;
+}
+
+function bindValuesToToken(vlt, vals, targetSpec, wholeWord, usedTokens) {
+  const cleanVals = [];
+  const seen = new Set();
+  for (const raw of vals) {
+    const val = normalizeScanText(String(raw || '').trim());
+    if (!val || PH.test(val) || seen.has(val)) continue;
+    seen.add(val);
+    cleanVals.push(val);
+  }
+  if (!cleanVals.length) return null;
+
+  let tok = null;
+  let en = null;
+
+  if (targetSpec.mode === 'existing' && vlt.byToken.has(targetSpec.tok)) {
+    tok = targetSpec.tok;
+    en = vlt.byToken.get(tok);
+    en.manual = true;
+    if (wholeWord) en.wholeWord = true;
+  } else if (targetSpec.mode === 'explicit') {
+    tok = targetSpec.tok;
+    if (vlt.byToken.has(tok)) {
+      en = vlt.byToken.get(tok);
+      en.manual = true;
+      if (wholeWord) en.wholeWord = true;
+    } else {
+      const prevN = vlt.counters.get(targetSpec.type) || 0;
+      if (targetSpec.num > prevN) vlt.counters.set(targetSpec.type, targetSpec.num);
+      en = { type: targetSpec.type, value: cleanVals[0], values: new Set(), manual: true, wholeWord: !!wholeWord };
+      vlt.byToken.set(tok, en);
+    }
+  } else {
+    // Jeżeli pierwsza wartość ma już token i użytkownik nie wymusił innego, przejmij go jako ręczny (chyba że wybrano inną kategorię)
+    const firstExisting = vlt.byValue.get(cleanVals[0]);
+    if (firstExisting && vlt.byToken.get(firstExisting).type === targetSpec.type) {
+      tok = firstExisting;
+      en = vlt.byToken.get(tok);
+      en.manual = true;
+      if (wholeWord) en.wholeWord = true;
+    } else {
+      tok = registerToken(vlt, targetSpec.type, cleanVals[0], true, usedTokens, !!wholeWord);
+      en = vlt.byToken.get(tok);
+    }
+  }
+
+  if (!en.values) en.values = new Set([en.value]);
+
+  for (const v of cleanVals) {
+    vlt.ignored.delete(v);
+    const prevTok = vlt.byValue.get(v);
+    if (prevTok && prevTok !== tok) {
+      const prevEn = vlt.byToken.get(prevTok);
+      if (prevEn) {
+        if (prevEn.values) prevEn.values.delete(v);
+        if (!prevEn.values || prevEn.values.size === 0) {
+          vlt.byToken.delete(prevTok);
+          vlt.revealed.delete(prevTok);
+        } else if (prevEn.value === v) {
+          prevEn.value = prevEn.values.values().next().value;
+        }
+      }
+    }
+    en.values.add(v);
+    vlt.byValue.set(v, tok);
+  }
+  return tok;
+}
+
 // ==== ENGINE END ====
 
 /* =====================================================================
@@ -1029,6 +1626,7 @@ function normalizeLabel(raw) {
 const $ = id => document.getElementById(id);
 let vault = newVault();      // jedyne miejsce, gdzie żyją sekrety (RAM)
 let toastTimer = 0;
+let findCursor = -1;
 
 function toast(msg, kind) {
   const t = $('toast');
@@ -1040,7 +1638,7 @@ function toast(msg, kind) {
 
 function readToggles() {
   const o = {};
-  for (const t of TOGGLES) o[t] = $('tg_' + t).checked;
+  for (const tg of TOGGLES) o[tg] = $('tg_' + tg).checked;
   return o;
 }
 
@@ -1051,25 +1649,54 @@ function el(tag, cls, text) {
   return e;
 }
 
+function fillTargetSelect(sel) {
+  if (!sel) return;
+  const prev = sel.value;
+  sel.textContent = '';
+  const defOpt = el('option', '', '➕ New token from label');
+  defOpt.value = '';
+  sel.appendChild(defOpt);
+  for (const [tok, en] of vault.byToken) {
+    const shown = vault.revealed.has(tok);
+    const aliasCount = en.values ? en.values.size : 1;
+    const suffix = shown
+      ? ' (' + (en.value.length > 20 ? en.value.slice(0, 20) + '…' : en.value) + (aliasCount > 1 ? ' +' + (aliasCount - 1) : '') + ')'
+      : ' [' + en.type + (aliasCount > 1 ? ' ×' + aliasCount : '') + ']';
+    const opt = el('option', '', tok + suffix);
+    opt.value = tok;
+    sel.appendChild(opt);
+  }
+  if (prev && vault.byToken.has(prev)) sel.value = prev;
+  else sel.value = '';
+}
+
+function renderTargetSelect() {
+  fillTargetSelect($('targetTok'));
+  fillTargetSelect($('modalTargetTok'));
+}
+
 /* ---------- Tabela mapowań ---------- */
 function renderTable() {
   const tb = $('mapBody');
   tb.textContent = '';
   $('mapCount').textContent = String(vault.byToken.size);
+  renderTargetSelect();
   if (!vault.byToken.size) {
-    const tr = el('tr'); const td = el('td', 'empty', 'No mappings yet — paste source text and click “Scan & mask”.');
-    td.colSpan = 6; tr.appendChild(td); tb.appendChild(tr);
+    const emptyRow = el('tr'); const td = el('td', 'empty', 'No mappings yet — paste source text and click “Scan & mask”.');
+    td.colSpan = 6; emptyRow.appendChild(td); tb.appendChild(emptyRow);
     return;
   }
   for (const [tok, en] of vault.byToken) {
     const tr = el('tr');
-    const tdT = el('td'); tdT.appendChild(el('span', 'tag', en.type + (en.manual ? ' ✎' : '')));
+    const aliasCount = en.values ? en.values.size : 1;
+    const tdT = el('td'); tdT.appendChild(el('span', 'tag', en.type + (en.manual ? ' ✎' : '') + (aliasCount > 1 ? ' ×' + aliasCount : '')));
     tr.appendChild(tdT);
     tr.appendChild(el('td', 'mono', tok));
-    tr.appendChild(el('td', '', String(en.value.length) + ' chars'));
-    tr.appendChild(el('td', '', String(vault.hits.get(tok) || 0)));
     const shown = vault.revealed.has(tok);
-    tr.appendChild(el('td', 'val', shown ? en.value : '•'.repeat(Math.min(8, Math.max(3, en.value.length)))));
+    const displayVal = en.values && en.values.size > 1 ? Array.from(en.values).join(' | ') : en.value;
+    tr.appendChild(el('td', '', shown ? (String(en.value.length) + ' chars') : '—'));
+    tr.appendChild(el('td', '', String(vault.hits.get(tok) || 0)));
+    tr.appendChild(el('td', 'val', shown ? displayVal : '••••••••'));
     const tdA = el('td', 'act');
     const bShow = el('button', 'btn sm', shown ? 'Hide' : 'Show');
     bShow.addEventListener('click', () => {
@@ -1089,9 +1716,13 @@ function removeRule(tok) {
   const en = vault.byToken.get(tok);
   if (!en) return;
   vault.byToken.delete(tok);
-  vault.byValue.delete(en.value);
+  const valSet = en.values ? Array.from(en.values) : [en.value];
+  for (const v of valSet) {
+    vault.byValue.delete(v);
+    vault.ignored.add(v);       // nie wykrywaj ponownie tej wartości automatycznie
+  }
   vault.revealed.delete(tok);
-  vault.ignored.add(en.value);       // nie wykrywaj ponownie tej wartości automatycznie
+  if (en.values) en.values.clear();
   en.value = '';
   render();
   toast('Removed rule ' + tok + ' — the value will remain visible in the output.', 'warn');
@@ -1112,6 +1743,22 @@ function render() {
       (off.length ? ' · ⚠ disabled: ' + off.join(', ') : '')
     : '';
   renderTable();
+  updateFindState();
+  const riskEl = $('risk1');
+  const risks = text ? residualRisks(r.out) : [];
+  if (!text) riskEl.textContent = '';
+  else if (risks.length) {
+    const rmap = { 'adres IP': 'IP address', 'XML z sekretem': 'XML secret', 'hasło w zdaniu': 'password in prose', 'ogon linii przy haśle': 'trailing text after secret', 'wartość przy kluczu': 'value at key' };
+    riskEl.textContent = 'Residual risk (' + risks.length + '): ' +
+      risks.map(x => (rmap[x.kind] || x.kind) + ' · line ' + x.line).join(' · ') +
+      '. Still visible in output — mask manually.';
+  } else {
+    riskEl.textContent = 'Residual scan: no obvious traces detected (not a guarantee).';
+  }
+  if ($('previewModal') && !$('previewModal').hidden) {
+    renderModalView();
+    updateModalFindState();
+  }
 }
 
 function updateSelInfo() {
@@ -1120,26 +1767,238 @@ function updateSelInfo() {
   $('selInfo').textContent = 'Selection: ' + n + ' chars';
 }
 
-function maskSelection() {
-  const ta = $('src');
-  const s = ta.selectionStart, e = ta.selectionEnd;
-  if (s === e) { toast('First select a text fragment in the source box.', 'warn'); return; }
-  const val = ta.value.slice(s, e).trim();
-  if (!val) { toast('Selection contains only whitespace.', 'warn'); return; }
-  const type = normalizeLabel($('lbl').value);
-  if (!type) { toast('Invalid label — use A–Z, digits and _ (e.g. USER).', 'warn'); return; }
-  const existing = vault.byValue.get(val);
-  if (existing) {
-    const en = vault.byToken.get(existing);
-    if (en.manual) { toast('This fragment is already masked as ' + existing + '.', 'warn'); return; }
-    // wcześniej wykryty automatycznie → przejmij jako regułę ręczną (token bez zmian)
-    en.manual = true;
+function resolveSpecFromInputs(tokSelId, lblId) {
+  const chosenTok = $(tokSelId) ? $(tokSelId).value : '';
+  if (chosenTok && vault.byToken.has(chosenTok)) {
+    return { mode: 'existing', tok: chosenTok, type: vault.byToken.get(chosenTok).type };
+  }
+  const inputLblRaw = $(lblId) ? $(lblId).value : '';
+  const parsedExplicit = parseExplicitToken(inputLblRaw);
+  if (parsedExplicit) {
+    return { mode: 'explicit', tok: parsedExplicit.tok, type: parsedExplicit.type, num: parsedExplicit.num };
+  }
+  const normType = normalizeLabel(inputLblRaw);
+  if (!normType) return null;
+  return { mode: 'new', type: normType };
+}
+
+function setFindOpen(open) {
+  const bar = $('findBar'), btn = $('findToggleBtn');
+  if (!bar || !btn) return;
+  bar.hidden = !open;
+  if (btn.setAttribute) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  btn.textContent = open ? '🔍 Hide phrase search ▴' : '🔍 Search phrase in text ▾';
+  if (open) {
+    const fi = $('findInput'), ta = $('src');
+    if (fi && !fi.value && ta && ta.selectionStart !== ta.selectionEnd) {
+      const selTxt = ta.value.slice(ta.selectionStart, ta.selectionEnd).trim();
+      if (selTxt && !selTxt.includes('\n')) fi.value = selTxt;
+    }
+    updateFindState();
+    if (fi) fi.focus();
+  }
+}
+
+function updateFindState() {
+  const fi = $('findInput'), fc = $('findCount');
+  if (!fi || !fc) return;
+  const q = fi.value;
+  if (!q) {
+    fc.textContent = '0 matches';
+    fc.className = 'fcount';
+    findCursor = -1;
+    return;
+  }
+  const matches = findMatchesInSource($('src').value, q, $('findIgnoreCase').checked, $('findWholeWord').checked);
+  if (!matches.length) {
+    fc.textContent = '0 matches';
+    fc.className = 'fcount warn';
+    findCursor = -1;
   } else {
-    vault.ignored.delete(val);
-    registerToken(vault, type, val, true, textTokens(ta.value));
+    if (findCursor >= matches.length) findCursor = 0;
+    fc.textContent = (findCursor >= 0 ? (findCursor + 1) + ' / ' : '') + matches.length + ' matches';
+    fc.className = 'fcount ok';
+  }
+}
+
+function stepFind(dir) {
+  const fi = $('findInput');
+  const q = fi ? fi.value : '';
+  if (!q) { toast('Enter a search phrase in the find box.', 'warn'); return; }
+  const ta = $('src');
+  const matches = findMatchesInSource(ta.value, q, $('findIgnoreCase').checked, $('findWholeWord').checked);
+  if (!matches.length) {
+    updateFindState();
+    toast('No occurrences of the search phrase found in source text.', 'warn');
+    return;
+  }
+  findCursor = (findCursor + dir + matches.length) % matches.length;
+  const m = matches[findCursor];
+  ta.focus();
+  ta.setSelectionRange(m.s, m.e);
+  // Przewiń textarea do znalezionego wiersza
+  const before = ta.value.slice(0, m.s);
+  const lineIdx = before.split(/\r?\n/).length - 1;
+  const totalLines = Math.max(1, ta.value.split(/\r?\n/).length);
+  ta.scrollTop = Math.max(0, Math.floor((lineIdx / totalLines) * ta.scrollHeight) - Math.floor(ta.clientHeight / 3));
+  updateSelInfo();
+  updateFindState();
+}
+
+function maskFoundMatches() {
+  const srcTa1 = $('src');
+  const findEl1 = $('findInput');
+  let query1 = findEl1 ? findEl1.value : '';
+  if (!query1 && srcTa1.selectionStart !== srcTa1.selectionEnd) {
+    query1 = srcTa1.value.slice(srcTa1.selectionStart, srcTa1.selectionEnd).trim();
+    if (findEl1 && query1) findEl1.value = query1;
+  }
+  if (!query1 || !query1.trim()) {
+    toast('Enter a search phrase (or select text) before assigning to a token.', 'warn');
+    return;
+  }
+  const ic1 = $('findIgnoreCase').checked;
+  const ww1 = $('findWholeWord').checked;
+  const matches1 = findMatchesInSource(srcTa1.value, query1, ic1, ww1);
+  if (!matches1.length) {
+    updateFindState();
+    toast('No matching phrases found in source text.', 'warn');
+    return;
+  }
+  const foundSpec = resolveSpecFromInputs('targetTok', 'lbl');
+  if (!foundSpec) {
+    toast('Invalid label — use A–Z, digits and _ (e.g. USER or USER_01).', 'warn');
+    return;
+  }
+  const vals1 = matches1.map(m => m.val);
+  const boundTok1 = bindValuesToToken(vault, vals1, foundSpec, ww1, textTokens(srcTa1.value));
+  if (!boundTok1) {
+    toast('Could not assign phrases to token.', 'warn');
+    return;
   }
   render();
-  toast('Added token ' + vault.byValue.get(val));
+  const prev1 = query1.trim().length > 24 ? query1.trim().slice(0, 24) + '…' : query1.trim();
+  toast('Assigned ' + matches1.length + ' matches (“' + prev1 + '”) → ' + boundTok1);
+}
+
+function maskSelection() {
+  const srcTa2 = $('src');
+  const selStart = srcTa2.selectionStart, selEnd = srcTa2.selectionEnd;
+  if (selStart === selEnd) { toast('First select a text fragment in the source box.', 'warn'); return; }
+  const selVal = normalizeScanText(srcTa2.value.slice(selStart, selEnd).trim());
+  if (!selVal) { toast('Selection contains only whitespace.', 'warn'); return; }
+  const selSpec = resolveSpecFromInputs('targetTok', 'lbl');
+  if (!selSpec) { toast('Invalid label — use A–Z, digits and _ (e.g. USER or USER_01).', 'warn'); return; }
+  const ww2 = $('findWholeWord') ? $('findWholeWord').checked : false;
+  const boundTok2 = bindValuesToToken(vault, [selVal], selSpec, ww2, textTokens(srcTa2.value));
+  if (!boundTok2) { toast('Could not create token.', 'warn'); return; }
+  render();
+  toast('Assigned selection to token ' + boundTok2);
+}
+
+/* ---------- Modal podglądu bezpiecznego promptu ---------- */
+function renderModalView() {
+  const modal = $('previewModal'), view = $('modalView');
+  if (!modal || !view || modal.hidden) return;
+  const prevScroll = view.scrollTop;
+  view.textContent = '';
+  if ($('modalStats')) $('modalStats').textContent = $('stats1') ? $('stats1').textContent : '';
+  if ($('modalRisk')) $('modalRisk').textContent = $('risk1') ? $('risk1').textContent : '';
+  const outText = $('out1').value;
+  if (!outText) {
+    view.appendChild(el('div', 'empty', 'No anonymized text yet — paste source text and click “Scan & mask” first.'));
+    return;
+  }
+  const risks = $('src').value ? residualRisks(outText) : [];
+  const riskLines = new Set(risks.map(x => x.line));
+  const lines = outText.split(/\r?\n/);
+  const tokRe = /<[A-Za-z][A-Za-z0-9_]{0,30}_\d{1,6}>/g;
+  for (let i = 0; i < lines.length; i++) {
+    const rowEl = el('div', riskLines.has(i + 1) ? 'mline risk-line' : 'mline');
+    rowEl.appendChild(el('span', 'ln', String(i + 1)));
+    const txtSpan = el('span', 'ltxt');
+    const line = lines[i];
+    tokRe.lastIndex = 0;
+    let lastIdx = 0;
+    let m;
+    while ((m = tokRe.exec(line))) {
+      if (m.index > lastIdx) txtSpan.appendChild(document.createTextNode(line.slice(lastIdx, m.index)));
+      txtSpan.appendChild(el('span', 'tok-pill', m[0]));
+      lastIdx = m.index + m[0].length;
+    }
+    if (lastIdx < line.length) txtSpan.appendChild(document.createTextNode(line.slice(lastIdx)));
+    else if (!line.length) txtSpan.appendChild(document.createTextNode(' '));
+    rowEl.appendChild(txtSpan);
+    view.appendChild(rowEl);
+  }
+  view.scrollTop = prevScroll;
+}
+
+function updateModalFindState() {
+  const mp = $('modalPhrase'), mc = $('modalFindCount');
+  if (!mp || !mc) return;
+  const q = mp.value;
+  if (!q) {
+    mc.textContent = '0 matches';
+    mc.className = 'fcount';
+    return;
+  }
+  const ignoreCase = $('modalIgnoreCase') ? $('modalIgnoreCase').checked : true;
+  const wholeWord = $('modalWholeWord') ? $('modalWholeWord').checked : false;
+  const matches = findMatchesInSource($('src').value, q, ignoreCase, wholeWord);
+  mc.textContent = matches.length + ' matches';
+  mc.className = matches.length ? 'fcount ok' : 'fcount warn';
+}
+
+function openModal() {
+  const modal = $('previewModal');
+  if (!modal) return;
+  if ($('src').value && !$('out1').value) render();
+  modal.hidden = false;
+  renderTargetSelect();
+  renderModalView();
+  updateModalFindState();
+  if ($('modalView')) $('modalView').focus();
+}
+
+function closeModal() {
+  const modal = $('previewModal');
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  try { const sel = window.getSelection(); if (sel) sel.removeAllRanges(); } catch { /* ignore */ }
+}
+
+function maskFromModal() {
+  const mpEl = $('modalPhrase');
+  const query3 = mpEl ? mpEl.value : '';
+  if (!query3 || !query3.trim()) {
+    toast('Highlight a missed fragment in the preview or enter a phrase above.', 'warn');
+    return;
+  }
+  const srcTa3 = $('src');
+  const ic3 = $('modalIgnoreCase') ? $('modalIgnoreCase').checked : true;
+  const ww3 = $('modalWholeWord') ? $('modalWholeWord').checked : false;
+  const matches3 = findMatchesInSource(srcTa3.value, query3, ic3, ww3);
+  if (!matches3.length) {
+    updateModalFindState();
+    toast('No matching phrase found in the source text.', 'warn');
+    return;
+  }
+  const modalSpec = resolveSpecFromInputs('modalTargetTok', 'modalLbl');
+  if (!modalSpec) {
+    toast('Invalid label — use A–Z, digits and _ (e.g. USER or USER_01).', 'warn');
+    return;
+  }
+  const vals3 = matches3.map(m => m.val);
+  const boundTok3 = bindValuesToToken(vault, vals3, modalSpec, ww3, textTokens(srcTa3.value));
+  if (!boundTok3) {
+    toast('Could not assign phrases to token.', 'warn');
+    return;
+  }
+  if (mpEl) mpEl.value = '';
+  render();
+  const prev3 = query3.trim().length > 24 ? query3.trim().slice(0, 24) + '…' : query3.trim();
+  toast('Masked ' + matches3.length + ' matches (“' + prev3 + '”) → ' + boundTok3);
 }
 
 /* ---------- Przywracanie ---------- */
@@ -1165,9 +2024,9 @@ async function copyFrom(id) {
   const ta = $(id), text = ta.value;
   if (!text) { toast('Nothing to copy.', 'warn'); return; }
   let ok = false;
-  try { await navigator.clipboard.writeText(text); ok = true; } catch (e) { /* fallback poniżej */ }
+  try { await navigator.clipboard.writeText(text); ok = true; } catch { /* fallback poniżej */ }
   if (!ok) {
-    try { ta.focus(); ta.select(); ok = document.execCommand('copy'); ta.setSelectionRange(0, 0); } catch (e) { ok = false; }
+    try { ta.focus(); ta.select(); ok = document.execCommand('copy'); ta.setSelectionRange(0, 0); } catch { ok = false; }
   }
   toast(ok ? 'Copied to clipboard.' : 'Could not copy — select the text and press Ctrl+C.', ok ? '' : 'warn');
 }
@@ -1175,41 +2034,59 @@ async function copyFrom(id) {
 /* ---------- PANIC ---------- */
 function wipeTextarea(ta) {
   const n = ta.value.length;
-  if (n) { try { ta.value = '\u2588'.repeat(Math.min(n, 4000000)); } catch (e) { /* ignore */ } }
+  if (n) { try { ta.value = '\u2588'.repeat(Math.min(n, 4000000)); } catch { /* ignore */ } }
   ta.value = '';
   try {
     const p = ta.parentNode, ns = ta.nextSibling;
     if (p) { p.removeChild(ta); p.insertBefore(ta, ns); }      // czyści natywny bufor historii Cofnij (Ctrl+Z)
-  } catch (e) { /* ignore */ }
+  } catch { /* ignore */ }
 }
 function clearStep2() {
   for (const id of ['src2', 'out2']) {
     const ta = $(id);
-    try { ta.setSelectionRange(0, 0); } catch (e) { /* ignore */ }
+    try { ta.setSelectionRange(0, 0); } catch { /* ignore */ }
     wipeTextarea(ta);
   }
   $('stats2').textContent = '';
   toast('Cleared Step 2 fields.');
 }
 function pressureGC() {
-  try { if (typeof window.gc === 'function') window.gc(); } catch (e) { /* tylko z flagą --expose-gc */ }
-  try { let a = []; for (let i = 0; i < 4; i++) a.push(new Uint8Array(8 * 1024 * 1024).fill(i + 1)); a = null; } catch (e) { /* brak pamięci — pomiń */ }
+  try { if (typeof window.gc === 'function') window.gc(); } catch { /* tylko z flagą --expose-gc */ }
+  try { let a = []; for (let i = 0; i < 4; i++) a.push(new Uint8Array(8 * 1024 * 1024).fill(i + 1)); a = null; } catch { /* brak pamięci — pomiń */ }
 }
 function panic(silent) {
-  try { window.name = ''; } catch (e) { /* ignore */ }
-  try { const sel = window.getSelection(); if (sel) sel.removeAllRanges(); } catch (e) { /* ignore */ }
+  try { window.name = ''; } catch { /* ignore */ }
+  try { const sel = window.getSelection(); if (sel) sel.removeAllRanges(); } catch { /* ignore */ }
+  closeModal();
+  if ($('modalView')) $('modalView').textContent = '';
   for (const id of ['src', 'out1', 'src2', 'out2']) {
     const ta = $(id);
-    try { ta.setSelectionRange(0, 0); } catch (e) { /* ignore */ }
+    try { ta.setSelectionRange(0, 0); } catch { /* ignore */ }
     wipeTextarea(ta);
   }
-  for (const en of vault.byToken.values()) en.value = '';     // nadpisz referencje do sekretów
+  if ($('findInput')) wipeTextarea($('findInput'));
+  if ($('modalPhrase')) wipeTextarea($('modalPhrase'));
+  findCursor = -1;
+  setFindOpen(false);
+  for (const en of vault.byToken.values()) {
+    if (en.values) en.values.clear();
+    en.value = '';     // nadpisz referencje do sekretów
+  }
   vault.byToken.clear(); vault.byValue.clear(); vault.counters.clear();
   vault.ignored.clear(); vault.revealed.clear(); vault.hits.clear();
   vault = newVault();                                         // porzuć stary obiekt
   $('lbl').value = 'USER';
   $('lblPreset').value = 'USER';
+  if ($('targetTok')) $('targetTok').value = '';
+  if ($('findCount')) { $('findCount').textContent = '0 matches'; $('findCount').className = 'fcount'; }
+  if ($('modalLbl')) $('modalLbl').value = 'USER';
+  if ($('modalPreset')) $('modalPreset').value = 'USER';
+  if ($('modalTargetTok')) $('modalTargetTok').value = '';
+  if ($('modalFindCount')) { $('modalFindCount').textContent = '0 matches'; $('modalFindCount').className = 'fcount'; }
+  if ($('modalStats')) $('modalStats').textContent = '';
+  if ($('modalRisk')) $('modalRisk').textContent = '';
   $('stats1').textContent = ''; $('stats2').textContent = '';
+  if ($('risk1')) $('risk1').textContent = '';
   $('selInfo').textContent = 'Selection: 0 chars';
   renderTable();
   if (!silent) {
@@ -1219,10 +2096,10 @@ function panic(silent) {
       tmp.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
       document.body.appendChild(tmp);
       tmp.focus(); tmp.select();
-      try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+      try { document.execCommand('copy'); } catch { /* ignore */ }
       document.body.removeChild(tmp);
-    } catch (e) { /* ignore */ }
-    try { if (navigator.clipboard) navigator.clipboard.writeText('').catch(() => {}); } catch (e) { /* ignore */ }
+    } catch { /* ignore */ }
+    try { if (navigator.clipboard) navigator.clipboard.writeText('').catch(() => {}); } catch { /* ignore */ }
   }
   pressureGC();
   if (!silent) toast('Cleared: fields, undo history, RAM vault, and clipboard.');
@@ -1231,14 +2108,14 @@ function panic(silent) {
 /* ---------- Wskaźnik bezpieczeństwa: autotest CSP + blokada API sieciowych i dyskowych ---------- */
 function lockNetworkAPIs() {
   const deny = () => { throw new Error('Blocked by offline policy'); };
-  for (const k of ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'Worker', 'SharedWorker', 'open']) {
-    try { Object.defineProperty(window, k, { value: deny, configurable: false, writable: false }); } catch (e) { /* ignore */ }
+  for (const k of ['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'Worker', 'SharedWorker', 'open', 'RTCPeerConnection', 'webkitRTCPeerConnection']) {
+    try { Object.defineProperty(window, k, { value: deny, configurable: false, writable: false }); } catch { /* ignore */ }
   }
   for (const s of ['localStorage', 'sessionStorage', 'indexedDB', 'caches', 'cookieStore']) {
-    try { Object.defineProperty(window, s, { get: deny, configurable: false }); } catch (e) { /* ignore */ }
+    try { Object.defineProperty(window, s, { get: deny, configurable: false }); } catch { /* ignore */ }
   }
-  try { Object.defineProperty(document, 'cookie', { get: () => '', set: deny, configurable: false }); } catch (e) { /* ignore */ }
-  try { if (navigator.sendBeacon) Object.defineProperty(navigator, 'sendBeacon', { value: deny, configurable: false, writable: false }); } catch (e) { /* ignore */ }
+  try { Object.defineProperty(document, 'cookie', { get: () => '', set: deny, configurable: false }); } catch { /* ignore */ }
+  try { if (navigator.sendBeacon) Object.defineProperty(navigator, 'sendBeacon', { value: deny, configurable: false, writable: false }); } catch { /* ignore */ }
 }
 
 function securitySelfTest() {
@@ -1262,25 +2139,95 @@ function securitySelfTest() {
 }
 
 /* ---------- Podpięcie zdarzeń ---------- */
+function bindLabelSync(presetId, lblId, tokSelId, onEnterFn) {
+  const presetEl = $(presetId), lblEl = $(lblId), tokEl = $(tokSelId);
+  if (presetEl) {
+    presetEl.addEventListener('change', () => {
+      if (presetEl.value && lblEl) {
+        lblEl.value = presetEl.value;
+        if (tokEl) tokEl.value = '';
+      }
+    });
+  }
+  if (lblEl) {
+    lblEl.addEventListener('input', () => {
+      const norm = normalizeLabel(lblEl.value);
+      if (presetEl) {
+        const hasOpt = Array.from(presetEl.options).some(o => o.value === norm);
+        if (hasOpt) presetEl.value = norm;
+        else presetEl.selectedIndex = -1;
+      }
+    });
+    if (onEnterFn) {
+      lblEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); onEnterFn(); } });
+    }
+  }
+  if (tokEl) {
+    tokEl.addEventListener('change', () => {
+      const v = tokEl.value;
+      if (v && vault.byToken.has(v)) {
+        const tokType = vault.byToken.get(v).type;
+        if (lblEl) lblEl.value = tokType;
+        if (presetEl && Array.from(presetEl.options).some(o => o.value === tokType)) presetEl.value = tokType;
+      }
+    });
+  }
+}
+
 $('scanBtn').addEventListener('click', render);
 $('clear1Btn').addEventListener('click', () => panic(false));
 $('manualBtn').addEventListener('click', maskSelection);
+$('findToggleBtn').addEventListener('click', () => setFindOpen($('findBar').hidden));
+$('maskFoundBtn').addEventListener('click', maskFoundMatches);
+$('findPrev').addEventListener('click', () => stepFind(-1));
+$('findNext').addEventListener('click', () => stepFind(1));
+$('findInput').addEventListener('input', () => { findCursor = -1; updateFindState(); });
+$('findIgnoreCase').addEventListener('change', () => { findCursor = -1; updateFindState(); });
+$('findWholeWord').addEventListener('change', () => { findCursor = -1; updateFindState(); });
+$('findInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); maskFoundMatches(); }
+  else if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); stepFind(-1); }
+  else if (e.key === 'Enter') { e.preventDefault(); stepFind(1); }
+});
+$('openModalBtn').addEventListener('click', openModal);
+$('closeModalBtn').addEventListener('click', closeModal);
+$('modalCloseBtn2').addEventListener('click', closeModal);
+$('modalCopyBtn').addEventListener('click', () => copyFrom('out1'));
+$('modalMaskBtn').addEventListener('click', maskFromModal);
+$('modalPhrase').addEventListener('input', updateModalFindState);
+$('modalIgnoreCase').addEventListener('change', updateModalFindState);
+$('modalWholeWord').addEventListener('change', updateModalFindState);
+$('modalPhrase').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); maskFromModal(); } });
+$('previewModal').addEventListener('click', e => { if (e.target === $('previewModal')) closeModal(); });
+const grabModalSel = () => {
+  try {
+    const sel = window.getSelection ? String(window.getSelection()).trim() : '';
+    if (sel && !sel.includes('\n') && !/^<[A-Za-z][A-Za-z0-9_]{0,30}_\d{1,6}>$/.test(sel)) {
+      $('modalPhrase').value = sel;
+      updateModalFindState();
+    }
+  } catch { /* ignore */ }
+};
+$('modalView').addEventListener('mouseup', grabModalSel);
+$('modalView').addEventListener('keyup', grabModalSel);
 $('restoreBtn').addEventListener('click', doRestore);
 $('clear2Btn').addEventListener('click', clearStep2);
 $('copy1').addEventListener('click', () => copyFrom('out1'));
 $('copy2').addEventListener('click', () => copyFrom('out2'));
 $('panicBtn').addEventListener('click', () => panic(false));
 
-const src = $('src');
-['select', 'mouseup', 'keyup', 'focus', 'blur'].forEach(ev => src.addEventListener(ev, updateSelInfo));
-src.addEventListener('paste', () => setTimeout(render, 30));
-src.addEventListener('input', () => {
+const srcEl = $('src');
+['select', 'mouseup', 'keyup', 'focus', 'blur'].forEach(ev => srcEl.addEventListener(ev, updateSelInfo));
+srcEl.addEventListener('paste', () => setTimeout(render, 30));
+srcEl.addEventListener('input', () => {
+  updateFindState();
   if ($('out1').value || $('stats1').textContent) {
     const s1 = $('stats1'); s1.className = 'muted warn';
     s1.textContent = '⚠ Text modified — click “Scan & mask” to refresh output.';
+    if ($('risk1')) $('risk1').textContent = '';
   }
 });
-src.addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); render(); } });
+srcEl.addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); render(); } });
 $('src2').addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); doRestore(); } });
 $('src2').addEventListener('input', () => {
   if ($('out2').value || $('stats2').textContent) {
@@ -1289,19 +2236,11 @@ $('src2').addEventListener('input', () => {
   }
 });
 $('src2').addEventListener('paste', () => setTimeout(doRestore, 30));
-for (const t of TOGGLES) $('tg_' + t).addEventListener('change', () => { if ($('src').value) render(); });
-$('lblPreset').addEventListener('change', () => {
-  if ($('lblPreset').value) $('lbl').value = $('lblPreset').value;
-});
-$('lbl').addEventListener('input', () => {
-  const norm = normalizeLabel($('lbl').value);
-  const preset = $('lblPreset');
-  const match = Array.from(preset.options).some(o => o.value === norm);
-  if (match) preset.value = norm;
-  else preset.selectedIndex = -1;
-});
-$('lbl').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); maskSelection(); } });
+for (const tgKey of TOGGLES) $('tg_' + tgKey).addEventListener('change', () => { if ($('src').value) render(); });
+bindLabelSync('lblPreset', 'lbl', 'targetTok', maskSelection);
+bindLabelSync('modalPreset', 'modalLbl', 'modalTargetTok', maskFromModal);
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('previewModal') && !$('previewModal').hidden) { e.preventDefault(); closeModal(); return; }
   if (e.altKey && e.shiftKey && (e.key === 'X' || e.key === 'x')) { e.preventDefault(); panic(false); }
 });
 window.addEventListener('dragover', e => e.preventDefault());
