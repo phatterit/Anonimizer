@@ -140,8 +140,8 @@ Repozytorium zawiera zsynchronizowane wersje aplikacji, współdzielące identyc
 
 | Plik | Język UI | Predefiniowane Presety Etykiet (Krok 1) |
 |---|---|---|
-| [`anonimizer.html`](anonimizer.html) / [`index.html`](index.html) | 🇵🇱 Polski | `USER`, `IMIE`, `NAZWISKO`, `ADRES`, `NAZWA`, `PESEL`, `ROK_URODZENIA`, `TELEFON`, `ID`, `PORT` |
-| [`index-en.html`](index-en.html) | 🇬🇧 Angielski | `USER`, `FIRST_NAME`, `LAST_NAME`, `NAME`, `ADDRESS`, `NATIONAL_ID`, `BIRTH_YEAR`, `PHONE`, `ID`, `PORT` |
+| [`anonimizer.html`](anonimizer.html) / [`index.html`](index.html) | 🇵🇱 Polski | `HASLO`, `USER`, `IMIE`, `NAZWISKO`, `ADRES`, `NAZWA`, `PESEL`, `ROK_URODZENIA`, `TELEFON`, `ID`, `PORT` |
+| [`index-en.html`](index-en.html) | 🇬🇧 Angielski | `PASSWORD`, `USER`, `FIRST_NAME`, `LAST_NAME`, `ADDRESS`, `NAME`, `NATIONAL_ID`, `BIRTH_YEAR`, `PHONE`, `ID`, `PORT` |
 
 ---
 

@@ -62,7 +62,7 @@ Przed skanowaniem `normalizeScanText` bezpiecznie usuwa niewidoczne znaki o zero
   * Pełnoekranowe okno podglądu z numeracją wierszy, wizualnym wyróżnieniem tokenów (`<TOKEN_NN>` jako niebieskie pigułki) oraz podświetleniem linii wykrytych przez skaner ryzyka rezydualnego.
   * Zaznaczenie dowolnego pominiętego fragmentu myszką w podglądzie automatycznie wpisuje go do paska szybkiego maskowania u góry modala i pozwala jednym kliknięciem (**„Zamaskuj w tekście”**) przypisać wszystkie jego wystąpienia do nowego lub istniejącego tokena bez zamykania okna.
 * **Wskazanie docelowego tokena (`#targetTok` / `#lbl`)**:
-  * Wygenerowanie **nowego tokena** z predefiniowanej listy 10 etykiet lub własnej etykiety (np. `NAZWA` → `<NAZWA_01>`),
+  * Wygenerowanie **nowego tokena** z predefiniowanej listy 11 etykiet lub własnej etykiety (np. `HASLO` → `<HASLO_01>`, `NAZWA` → `<NAZWA_01>`),
   * Wskazanie **istniejącego tokena** z listy rozwijanej **„Wskaż określony token”** (aby dopiąć kolejne frazy lub warianty do tego samego placeholdera),
   * Lub wpisanie jawnego tokena z numerem bezpośrednio w polu etykiety (np. `<USER_05>` lub `USER_05`).
 
